@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тетрадь Алгебры: Живые Уравнения</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,500;0,700;0,800;1,700&family=Press+Start+2P&family=Rubik:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper-bg: #fdfdfd;
+            --grid-line: #c7ddef;
+            --margin-line: #f28b82;
+            --ink-blue: #1e3a8a;
+            --ink-x: #1d4ed8;
+            --ink-num: #0f766e;
+            --pencil-gray: #64748b;
+            --desk-bg: #2b3548;
+            --pixel-border: #1e293b;
+        }
+
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: var(--desk-bg);
+            background-image: 
+                radial-gradient(#3b4963 15%, transparent 16%),
+                radial-gradient(#3b4963 15%, transparent 16%);
+            background-size: 24px 24px;
+            background-position: 0 0, 12px 12px;
+            color: #1e293b;
+            margin: 0;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        .pixel-font {
+            font-family: 'Press Start 2P', monospace;
+            letter-spacing: -0.5px;
+        }
+
+        .math-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Настоящий лист школьной тетради в синюю клеточку */
+        .notebook-sheet {
+            background-color: var(--paper-bg);
+            background-image:
+                linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+            background-size: 24px 24px;
+            position: relative;
+            box-shadow: 
+                0 0 0 4px #1e293b,
+                8px 8px 0px #0f172a,
+                0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        /* Красная линия полей справа */
+        .notebook-sheet::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 56px;
+            width: 2px;
+            background-color: var(--margin-line);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @media (max-width: 640px) {
+            .notebook-sheet::after {
+                right: 28px;
+            }
+        }
+
+        /* Пиксельная рамка для кнопок и карточек */
+        .pixel-box {
+            border: 3px solid #1e293b;
+            box-shadow: 4px 4px 0px #1e293b;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .pixel-box:active:not(:disabled) {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #1e293b;
+        }
+
+        .pixel-btn {
+            border: 2px solid #1e293b;
+            box-shadow: 3px 3px 0px #1e293b;
+            transition: all 0.1s ease;
+        }
+
+        .pixel-btn:hover:not(:disabled) {
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0px #1e293b;
+        }
+
+        .pixel-btn:active:not(:disabled) {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #1e293b;
+        }
+
+        /* Живые карточки слагаемых в строке уравнения */
+        .term-tile {
+            position: relative;
+            cursor: grab;
+            border: 2px solid #1e293b;
+            box-shadow: 3px 3px 0px #1e293b;
+            transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s, background-color 0.15s;
+            z-index: 10;
+        }
+
+        .term-tile:hover {
+            transform: translateY(-3px);
+            box-shadow: 4px 6px 0px #1e293b;
+            z-index: 20;
+        }
+
+        .term-tile:active {
+            cursor: grabbing;
+            transform: translateY(1px);
+            box-shadow: 1px 2px 0px #1e293b;
+        }
+
+        /* Слагаемое с X (синие чернила/стикер) */
+        .term-x {
+            background-color: #dbeafe;
+            color: #1e3a8a;
+            border-color: #1e3a8a;
+            box-shadow: 3px 3px 0px #1e3a8a;
+        }
+
+        /* Обычное число (бирюзово-изумрудные чернила/стикер) */
+        .term-num {
+            background-color: #ccfbf1;
+            color: #115e59;
+            border-color: #115e59;
+            box-shadow: 3px 3px 0px #115e59;
+        }
+
+        /* Выбранное слагаемое */
+        .term-selected {
+            background-color: #fef08a !important;
+            color: #854d0e !important;
+            border-color: #ca8a04 !important;
+            box-shadow: 0 0 0 3px #facc15, 4px 6px 0px #854d0e !important;
+            transform: translateY(-5px) scale(1.05);
+            z-index: 30;
+        }
+
+        /* Слагаемое в режиме ожидания выбора знака после переноса */
+        .term-pending-sign {
+            background-color: #fffbeb !important;
+            border: 2px dashed #d97706 !important;
+            box-shadow: 4px 4px 0px #b45309 !important;
+            animation: gentlePulse 1.2s infinite ease-in-out;
+        }
+
+        /* Слагаемые, выбранные для сложения подобных */
+        .term-merging {
+            background-color: #f3e8ff !important;
+            border-color: #7e22ce !important;
+            color: #581c87 !important;
+            box-shadow: 3px 3px 0px #7e22ce !important;
+            transform: translateY(-3px);
+        }
+
+        @keyframes gentlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+
+        /* Зона левой или правой части уравнения */
+        .equation-side-zone {
+            min-height: 60px;
+            min-width: 110px;
+            border: 2px dashed transparent;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .equation-side-zone.drop-target-active {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-color: #2563eb;
+        }
+
+        .equation-side-zone.clickable-side-hint {
+            background-color: rgba(250, 204, 21, 0.18);
+            border-color: #ca8a04;
+            cursor: pointer;
+        }
+
+        /* Тряска при ошибке */
+        @keyframes shakeError {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        .shake-anim {
+            animation: shakeError 0.4s ease-in-out;
+        }
+
+        /* Плавное появление новой строки */
+        @keyframes popIn {
+            0% { opacity: 0; transform: translateY(8px) scale(0.97); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .line-pop {
+            animation: popIn 0.25s ease-out forwards;
+        }
+
+        /* Скрытие стрелочек у input number */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        #confetti-canvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body class="min-h-screen py-4 px-2 sm:px-6 flex flex-col items-center">
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- ВЕРХНЯЯ ПАНЕЛЬ: ОБЛОЖКА ТЕТРАДИ И ОПЫТ -->
+    <header class="w-full max-w-4xl mb-4">
+        <div class="bg-[#1e3a8a] text-white pixel-box rounded-xl p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3">
+            
+            <!-- Название и уровень опыта -->
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 bg-[#facc15] text-[#1e293b] pixel-btn rounded-lg flex items-center justify-center text-xl font-black shrink-0">
+                    📓
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h1 class="pixel-font text-xs sm:text-sm text-[#facc15] tracking-wide">ТЕТРАДЬ АЛГЕБРЫ</h1>
+                        <span id="rank-badge" class="text-xs font-bold bg-[#172554] text-[#93c5fd] px-2 py-0.5 rounded border border-[#3b82f6]">
+                            Ур. 1
+                        </span>
+                    </div>
+                    <!-- Полоска опыта XP -->
+                    <div class="flex items-center gap-2 mt-1.5">
+                        <div class="w-36 sm:w-48 h-3 bg-[#0f172a] border-2 border-[#93c5fd] rounded-sm overflow-hidden">
+                            <div id="xp-bar" class="h-full bg-[#4ade80] transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <span id="xp-label" class="math-font text-xs font-bold text-[#e2e8f0]">⭐ 0 XP</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Счётчики серии и ошибок + Звук -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="bg-[#172554] border-2 border-[#3b82f6] rounded-lg px-2.5 py-1 flex items-center gap-1.5" title="Серия верных решений подряд">
+                    <span>🔥</span>
+                    <span class="text-xs text-[#bfdbfe]">Серия:</span>
+                    <span id="streak-val" class="math-font font-extrabold text-sm text-[#facc15]">0</span>
+                </div>
+
+                <div class="bg-[#172554] border-2 border-[#3b82f6] rounded-lg px-2.5 py-1 flex items-center gap-1.5" title="Решено уравнений за урок">
+                    <span>✅</span>
+                    <span class="text-xs text-[#bfdbfe] hidden sm:inline">Решено:</span>
+                    <span id="solved-val" class="math-font font-extrabold text-sm text-[#4ade80]">0</span>
+                </div>
+
+                <button id="sound-btn" onclick="SoundFX.toggle()" class="pixel-btn bg-[#3b82f6] hover:bg-[#60a5fa] text-white w-9 h-9 rounded-lg flex items-center justify-center text-sm" title="Звук Вкл/Выкл">
+                    🔊
+                </button>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКИ ВЫБОРА ТИПА УРАВНЕНИЙ (КАК ЗАКЛАДКИ В ТЕТРАДИ) -->
+        <div class="flex flex-wrap items-center justify-between gap-2 mt-3 px-1">
+            <div class="flex flex-wrap items-center gap-1.5">
+                <button onclick="selectMode(1)" id="mode-tab-1" class="pixel-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#facc15] text-[#1e293b]">
+                    1. Простые (2x + 4 = 10)
+                </button>
+                <button onclick="selectMode(2)" id="mode-tab-2" class="pixel-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#e2e8f0] text-[#1e293b]">
+                    2. Иксы с двух сторон
+                </button>
+                <button onclick="selectMode(3)" id="mode-tab-3" class="pixel-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#e2e8f0] text-[#1e293b]">
+                    3. Песочница (много слагаемых)
+                </button>
+                <button onclick="toggleCustomBar()" id="mode-tab-custom" class="pixel-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#dbeafe] text-[#1e3a8a]">
+                    ✏️ Свой пример
+                </button>
+            </div>
+
+            <!-- Быстрые действия над тетрадью -->
+            <div class="flex items-center gap-1.5">
+                <button id="undo-btn" onclick="undoStep()" disabled class="pixel-btn px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white text-[#1e293b] disabled:opacity-40">
+                    ↩ Назад
+                </button>
+                <button onclick="giveHint()" class="pixel-btn px-2.5 py-1.5 rounded-lg text-xs font-bold bg-[#fef08a] text-[#854d0e]">
+                    💡 Подсказка
+                </button>
+                <button onclick="generateNewEquation()" class="pixel-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#4ade80] text-[#064e3b]">
+                    🔄 Новый пример
+                </button>
+            </div>
+        </div>
+
+        <!-- ВСТРОЕННАЯ СТРОКА ВВОДА СВОЕГО ПРИМЕРА (без модальных окон!) -->
+        <div id="custom-input-bar" class="hidden mt-2 bg-[#eff6ff] pixel-box rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2 text-xs font-bold text-[#1e3a8a]">
+                <span>✏️ Впиши любое уравнение:</span>
+            </div>
+            <div class="flex flex-1 min-w-[220px] items-center gap-2">
+                <input id="custom-eq-field" type="text" placeholder="Например: 5x - 6 = 2x + 9" 
+                    class="flex-1 px-3 py-1.5 rounded-lg border-2 border-[#1e3a8a] math-font text-sm font-bold text-[#1e293b] focus:outline-none bg-white" />
+                <button onclick="applyCustomEquation()" class="pixel-btn px-3 py-1.5 rounded-lg bg-[#1e3a8a] text-white text-xs font-bold">
+                    Записать в тетрадь
+                </button>
+                <button onclick="toggleCustomBar()" class="text-xs text-[#64748b] hover:text-[#1e293b] font-bold px-2">
+                    ✕
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ГЛАВНЫЙ ЛИСТ РАБОЧЕЙ ТЕТРАДИ В КЛЕТОЧКУ -->
+    <main class="w-full max-w-4xl flex-1 flex flex-col">
+        <div class="notebook-sheet rounded-2xl flex-1 p-4 sm:p-8 pr-14 sm:pr-20 flex flex-col justify-between min-h-[500px]">
+            
+            <div>
+                <!-- Шапка тетрадного листа: Номер задания и рукописная памятка -->
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b-2 border-[#93c5fd]/70">
+                    <div class="flex items-center gap-2">
+                        <span id="task-title" class="math-font font-extrabold text-sm sm:text-base text-[#1e3a8a] bg-[#dbeafe]/80 px-2.5 py-0.5 rounded border border-[#93c5fd]">
+                            Задание №1. Решите уравнение:
+                        </span>
+                    </div>
+                    <!-- Ненавязчивая статистика точности на полях -->
+                    <div class="math-font text-xs text-[#64748b] flex items-center gap-3">
+                        <span title="Ошибки при смене знака">Знаки: <b id="err-sign" class="text-[#dc2626]">0</b></span>
+                        <span title="Ошибки в вычислениях">Счёт: <b id="err-math" class="text-[#dc2626]">0</b></span>
+                    </div>
+                </div>
+
+                <!-- Подсказка управления (как работать в тетради) -->
+                <div id="status-banner" class="mb-4 px-3 py-2 rounded-lg bg-[#f8fafc]/90 border-2 border-[#cbd5e1] text-xs sm:text-sm text-[#334155] flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span id="status-icon" class="text-base">✍️</span>
+                        <span id="status-text" class="font-medium">
+                            Перетаскивай слагаемые через <b>«=»</b> (знак сменится!) или накладывай подобные друг на друга, чтобы посчитать. Можно и просто <b>нажимать</b> на них!
+                        </span>
+                    </div>
+                </div>
+
+                <!-- ИСТОРИЯ ПРЕДЫДУЩИХ СТРОЧЕК РЕШЕНИЯ (Как записи ручкой в тетради) -->
+                <div id="notebook-history" class="space-y-3 mb-4">
+                    <!-- Сюда добавляются уже выполненные шаги уравнения -->
+                </div>
+
+                <!-- АКТИВНАЯ ИНТЕРАКТИВНАЯ СТРОКА УРАВНЕНИЯ -->
+                <div id="active-equation-wrapper" class="my-2 py-3 px-2 sm:px-4 rounded-xl bg-[#eff6ff]/70 border-2 border-[#60a5fa] shadow-sm transition-all">
+                    
+                    <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 min-h-[68px]" id="active-equation-row">
+                        
+                        <!-- Левая часть уравнения -->
+                        <div id="left-zone" onclick="handleSideZoneClick('left', event)" 
+                             class="equation-side-zone flex flex-wrap items-center justify-end gap-2 p-2">
+                        </div>
+
+                        <!-- Знак РАВНО (граница переноса) -->
+                        <div class="flex flex-col items-center mx-1 select-none">
+                            <div class="w-10 h-10 rounded-lg bg-white border-2 border-[#1e3a8a] shadow-[2px_2px_0px_#1e3a8a] flex items-center justify-center math-font text-2xl font-black text-[#dc2626]">
+                                =
+                            </div>
+                        </div>
+
+                        <!-- Правая часть уравнения -->
+                        <div id="right-zone" onclick="handleSideZoneClick('right', event)" 
+                             class="equation-side-zone flex flex-wrap items-center justify-start gap-2 p-2">
+                        </div>
+
+                    </div>
+
+                    <!-- ВСТРОЕННАЯ ПАНЕЛЬ ВЫЧИСЛЕНИЯ (открывается прямо под строкой, без модальных окон!) -->
+                    <div id="inline-action-panel" class="hidden mt-3 pt-3 border-t-2 border-dashed border-[#93c5fd] flex flex-col items-center line-pop">
+                        
+                        <!-- Режим 1: Сложение подобных слагаемых прямо в тетради -->
+                        <div id="inline-merge-box" class="hidden flex flex-col items-center w-full">
+                            <div class="text-xs font-bold text-[#1e3a8a] mb-2 flex items-center gap-1.5">
+                                <span>🧮 Складываем подобные слагаемые прямо в строке:</span>
+                            </div>
+                            <div class="flex flex-wrap items-center justify-center gap-2 bg-white px-4 py-2.5 rounded-xl border-2 border-[#1e293b] shadow-[3px_3px_0px_#1e293b]">
+                                <span id="merge-expr-label" class="math-font text-lg sm:text-xl font-extrabold text-[#1e3a8a]">5x - 2x =</span>
+                                <div class="flex items-center gap-1">
+                                    <input id="inline-merge-input" type="number" placeholder="?" autocomplete="off"
+                                        class="w-20 px-2 py-1 text-center math-font text-xl font-black text-[#1e293b] bg-[#fef9c3] border-2 border-[#1e293b] rounded focus:outline-none" />
+                                    <span id="merge-x-suffix" class="math-font text-xl font-black text-[#1d4ed8]">x</span>
+                                </div>
+                                <button onclick="confirmInlineMerge()" class="pixel-btn px-3 py-1.5 rounded-lg bg-[#4ade80] text-[#064e3b] text-xs font-extrabold">
+                                    Записать ↵
+                                </button>
+                                <button onclick="cancelInlineAction()" class="pixel-btn px-2.5 py-1.5 rounded-lg bg-[#f1f5f9] text-[#475569] text-xs font-bold">
+                                    Отмена
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Режим 2: Финальный шаг деления (нахождение X прямо на следующей строчке) -->
+                        <div id="inline-divide-box" class="hidden flex flex-col items-center w-full">
+                            <div id="divide-explanation" class="text-xs font-bold text-[#1e3a8a] mb-2 text-center">
+                                Делим обе части уравнения на число перед X:
+                            </div>
+                            <div class="flex flex-wrap items-center justify-center gap-2 bg-white px-4 py-2.5 rounded-xl border-2 border-[#1e293b] shadow-[3px_3px_0px_#1e293b]">
+                                <span id="divide-formula-label" class="math-font text-lg sm:text-xl font-extrabold text-[#1e3a8a]">x = 12 : 3 =</span>
+                                <input id="inline-divide-input" type="number" placeholder="?" autocomplete="off"
+                                    class="w-20 px-2 py-1 text-center math-font text-xl font-black text-[#1e293b] bg-[#fef9c3] border-2 border-[#1e293b] rounded focus:outline-none" />
+                                <button onclick="confirmInlineDivision()" class="pixel-btn px-3 py-1.5 rounded-lg bg-[#4ade80] text-[#064e3b] text-xs font-extrabold">
+                                    Ответ ↵
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Компактная экранная цифровая клавиатура (удобно на телефоне, планшете и доске) -->
+                        <div id="inline-numpad" class="mt-3 flex flex-wrap items-center justify-center gap-1.5 max-w-md">
+                            <button onclick="numpadPress('-')" class="pixel-btn w-9 h-9 rounded bg-[#fee2e2] text-[#991b1b] math-font font-black text-base">−</button>
+                            <button onclick="numpadPress('1')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">1</button>
+                            <button onclick="numpadPress('2')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">2</button>
+                            <button onclick="numpadPress('3')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">3</button>
+                            <button onclick="numpadPress('4')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">4</button>
+                            <button onclick="numpadPress('5')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">5</button>
+                            <button onclick="numpadPress('6')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">6</button>
+                            <button onclick="numpadPress('7')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">7</button>
+                            <button onclick="numpadPress('8')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">8</button>
+                            <button onclick="numpadPress('9')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">9</button>
+                            <button onclick="numpadPress('0')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">0</button>
+                            <button onclick="numpadBackspace()" class="pixel-btn px-2.5 h-9 rounded bg-[#f1f5f9] text-[#475569] font-bold text-xs">⌫</button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ШТАМП О РЕШЕНИИ ПРИМЕРА (Появляется прямо в тетради, как оценка учителя зелёной пастой) -->
+                <div id="victory-notebook-stamp" class="hidden my-4 p-4 rounded-xl bg-[#dcfce7]/90 border-2 border-[#16a34a] shadow-[4px_4px_0px_#15803d] flex flex-wrap items-center justify-between gap-3 line-pop">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-[#22c55e] text-white border-2 border-[#14532d] flex items-center justify-center text-2xl font-black">
+                            5+
+                        </div>
+                        <div>
+                            <div class="math-font font-black text-base sm:text-lg text-[#14532d]" id="victory-answer-text">
+                                Ответ: x = 4 — Решено верно!
+                            </div>
+                            <div class="text-xs text-[#166534] font-semibold">
+                                Отличная работа в тетради! Начислено <span id="victory-xp-gain" class="font-extrabold">+25 XP</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="generateNewEquation()" class="pixel-btn px-4 py-2.5 rounded-xl bg-[#facc15] hover:bg-[#fde047] text-[#1e293b] font-extrabold text-xs sm:text-sm">
+                        Следующий пример ➔
+                    </button>
+                </div>
+            </div>
+
+            <!-- НИЖНЯЯ ШПАРГАЛКА НА ПОЛЯХ ТЕТРАДИ -->
+            <div class="mt-6 pt-3 border-t-2 border-[#cbd5e1] flex flex-wrap items-center justify-between gap-3 text-xs text-[#475569]">
+                <div class="flex flex-wrap items-center gap-4">
+                    <span class="flex items-center gap-1.5">
+                        <span class="inline-block w-3 h-3 rounded-sm bg-[#dbeafe] border border-[#1e3a8a]"></span>
+                        <b>Иксы (с переменной x)</b> — собираем с одной стороны
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="inline-block w-3 h-3 rounded-sm bg-[#ccfbf1] border border-[#115e59]"></span>
+                        <b>Числа</b> — собираем с другой стороны
+                    </span>
+                </div>
+                <div class="math-font text-[11px] text-[#dc2626] font-bold">
+                    Правило: перешёл через «=» ➔ поменяй знак!
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        /* =========================================================================
+           1. ПИКСЕЛЬНЫЙ ЗВУКОВОЙ ДВИЖОК (Web Audio API)
+        ========================================================================= */
+        const SoundFX = {
+            ctx: null,
+            enabled: true,
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+            },
+
+            toggle() {
+                this.enabled = !this.enabled;
+                document.getElementById('sound-btn').innerText = this.enabled ? '🔊' : '🔇';
+            },
+
+            beep(freq, type = 'square', duration = 0.09, vol = 0.07, endFreq = null) {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    if (endFreq) {
+                        osc.frequency.exponentialRampToValueAtTime(endFreq, this.ctx.currentTime + duration);
+                    }
+                    gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch (e) {}
+            },
+
+            pickup() { this.beep(420, 'triangle', 0.07, 0.08, 560); },
+            drop() { this.beep(320, 'sine', 0.1, 0.09, 480); },
+            success() {
+                this.beep(523, 'triangle', 0.09, 0.1);
+                setTimeout(() => this.beep(659, 'triangle', 0.12, 0.1), 75);
+            },
+            error() {
+                this.beep(170, 'sawtooth', 0.18, 0.09, 130);
+            },
+            fanfare() {
+                [523, 659, 784, 1046].forEach((n, i) => {
+                    setTimeout(() => this.beep(n, 'triangle', 0.2, 0.11), i * 85);
+                });
+            }
+        };
+
+        /* =========================================================================
+           2. СТАТИСТИКА И ПРОГРЕСС УЧЕНИКА
+        ========================================================================= */
+        const Player = {
+            xp: 0,
+            streak: 0,
+            solved: 0,
+            signErrors: 0,
+            mathErrors: 0,
+            mode: 1,
+
+            addXP(amount) {
+                this.xp += amount;
+                this.updateHeader();
+            },
+
+            updateHeader() {
+                const level = Math.floor(this.xp / 100) + 1;
+                const progress = this.xp % 100;
+                document.getElementById('rank-badge').innerText = `Ур. ${level}`;
+                document.getElementById('xp-bar').style.width = `${progress}%`;
+                document.getElementById('xp-label').innerText = `⭐ ${this.xp} XP`;
+                document.getElementById('streak-val').innerText = this.streak;
+                document.getElementById('solved-val').innerText = this.solved;
+                document.getElementById('err-sign').innerText = this.signErrors;
+                document.getElementById('err-math').innerText = this.mathErrors;
+            }
+        };
+
+        /* =========================================================================
+           3. МОДЕЛЬ СЛАГАЕМОГО (КАРТОЧКА В УРАВНЕНИИ)
+        ========================================================================= */
+        const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const randNonZero = (min, max) => {
+            let v = 0;
+            while (v === 0) v = randInt(min, max);
+            return v;
+        };
+
+        class Term {
+            constructor(coeff, isVar, id = null) {
+                this.id = id || ('t_' + Math.random().toString(36).substring(2, 8));
+                this.coeff = coeff;       // Числовой коэффициент (например, -3 или 5)
+                this.isVar = isVar;       // true для слагаемых с 'x', false для обычных чисел
+            }
+
+            clone() {
+                return new Term(this.coeff, this.isVar, this.id);
+            }
+
+            // Форматирование слагаемого в зависимости от того, стоит ли оно первым в своей части уравнения
+            formatForLine(isFirstOnSide = false) {
+                const abs = Math.abs(this.coeff);
+                const signChar = this.coeff >= 0 ? '+' : '−';
+                let body = '';
+                if (this.isVar) {
+                    body = (abs === 1) ? 'x' : `${abs}x`;
+                } else {
+                    body = `${abs}`;
+                }
+
+                if (isFirstOnSide) {
+                    return this.coeff < 0 ? `−${body}` : body;
+                }
+                return `${signChar} ${body}`;
+            }
+
+            // Форматирование всегда со знаком (для подсказок и штампов)
+            formatSigned() {
+                const abs = Math.abs(this.coeff);
+                const signChar = this.coeff >= 0 ? '+' : '−';
+                const body = this.isVar ? (abs === 1 ? 'x' : `${abs}x`) : `${abs}`;
+                return `${signChar}${body}`;
+            }
+        }
+
+        /* =========================================================================
+           4. СОСТОЯНИЕ ТЕТРАДИ И УРАВНЕНИЯ
+        ========================================================================= */
+        const Notebook = {
+            left: [],
+            right: [],
+            root: 0,
+            historyLines: [],     // Строки, уже записанные выше в тетради
+            undoStack: [],        // Стек для кнопки «Шаг назад»
+            selectedTermId: null,
+            selectedSide: null,
+
+            // Немодальные состояния прямо внутри активной строки:
+            // 1) Ожидание выбора знака после переноса через "="
+            pendingSign: null,    // { termId, side, originalCoeff, fromSide }
+            // 2) Сложение двух подобных слагаемых на одной стороне
+            pendingMerge: null,   // { side, id1, id2 }
+            // 3) Финальное деление (ax = b)
+            pendingDivision: false,
+            isSolved: false,
+
+            saveStateForUndo() {
+                this.undoStack.push({
+                    left: this.left.map(t => t.clone()),
+                    right: this.right.map(t => t.clone()),
+                    historyLines: [...this.historyLines]
+                });
+                document.getElementById('undo-btn').disabled = this.undoStack.length === 0;
+            },
+
+            formatFullEquation(leftArr = this.left, rightArr = this.right) {
+                const sideToStr = (arr) => {
+                    if (arr.length === 0) return '0';
+                    return arr.map((t, idx) => t.formatForLine(idx === 0)).join(' ');
+                };
+                return `${sideToStr(leftArr)} = ${sideToStr(rightArr)}`;
+            },
+
+            pushHistoryLine(eqText, commentText) {
+                this.historyLines.push({ eq: eqText, comment: commentText });
+            }
+        };
+
+        /* =========================================================================
+           5. ГЕНЕРАЦИЯ УРАВНЕНИЙ ДЛЯ 3 РЕЖИМОВ
+        ========================================================================= */
+        function selectMode(modeNum) {
+            Player.mode = modeNum;
+            [1, 2, 3].forEach(m => {
+                const btn = document.getElementById(`mode-tab-${m}`);
+                if (m === modeNum) {
+                    btn.className = 'pixel-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#facc15] text-[#1e293b]';
+                } else {
+                    btn.className = 'pixel-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#e2e8f0] text-[#1e293b]';
+                }
+            });
+            SoundFX.pickup();
+            generateNewEquation();
+        }
+
+        function generateNewEquation() {
+            Notebook.undoStack = [];
+            Notebook.historyLines = [];
+            Notebook.selectedTermId = null;
+            Notebook.selectedSide = null;
+            Notebook.pendingSign = null;
+            Notebook.pendingMerge = null;
+            Notebook.pendingDivision = false;
+            Notebook.isSolved = false;
+
+            document.getElementById('undo-btn').disabled = true;
+            document.getElementById('victory-notebook-stamp').classList.add('hidden');
+            document.getElementById('active-equation-wrapper').classList.remove('hidden');
+
+            const root = randNonZero(-9, 9);
+            Notebook.root = root;
+
+            if (Player.mode === 1) {
+                // Простые: ax + b = c
+                const a = randNonZero(-5, 6);
+                const b = randNonZero(-15, 15);
+                const c = a * root + b;
+                if (Math.random() < 0.75) {
+                    Notebook.left = [new Term(a, true), new Term(b, false)];
+                    Notebook.right = [new Term(c, false)];
+                } else {
+                    Notebook.left = [new Term(c, false)];
+                    Notebook.right = [new Term(a, true), new Term(b, false)];
+                }
+            } else if (Player.mode === 2) {
+                // Иксы с двух сторон: ax + b = cx + d
+                let a = randNonZero(-6, 7);
+                let c = randNonZero(-5, 6);
+                while (a === c) c = randNonZero(-5, 6);
+                const b = randNonZero(-14, 14);
+                const d = (a - c) * root + b;
+
+                Notebook.left = [new Term(a, true), new Term(b, false)];
+                Notebook.right = [new Term(c, true)];
+                if (d !== 0) Notebook.right.push(new Term(d, false));
+            } else {
+                // Песочница (много слагаемых с обеих сторон)
+                let a1 = randNonZero(-5, 5);
+                let a2 = randNonZero(-4, 4);
+                if (a1 + a2 === 0) a2 = 2;
+                let c1 = randNonZero(-4, 5);
+                while (a1 + a2 === c1) c1 = randNonZero(-4, 5);
+
+                const b1 = randNonZero(-10, 10);
+                const b2 = randNonZero(-9, 9);
+                const leftVal = (a1 + a2) * root + b1 + b2;
+                const d1 = leftVal - c1 * root;
+
+                Notebook.left = [new Term(a1, true), new Term(b1, false), new Term(a2, true)];
+                if (b2 !== 0) Notebook.left.push(new Term(b2, false));
+                Notebook.right = [new Term(c1, true)];
+                if (d1 !== 0) Notebook.right.push(new Term(d1, false));
+            }
+
+            document.getElementById('task-title').innerText = `Задание №${Player.solved + 1}. Решите уравнение:`;
+            setStatusMessage('✍️', 'Перетаскивай слагаемые через «=» или накладывай подобные друг на друга (можно также кликать по ним).', 'normal');
+            renderNotebookAll();
+        }
+
+        /* =========================================================================
+           6. ОТРИСОВКА ЛИСТА ТЕТРАДИ И ЖИВЫХ КАРТОЧЕК СЛАГАЕМЫХ
+        ========================================================================= */
+        let draggedId = null;
+        let draggedFromSide = null;
+
+        function setStatusMessage(icon, text, tone = 'normal') {
+            const banner = document.getElementById('status-banner');
+            document.getElementById('status-icon').innerText = icon;
+            document.getElementById('status-text').innerHTML = text;
+
+            if (tone === 'error') {
+                banner.className = 'mb-4 px-3 py-2 rounded-lg bg-[#fef2f2] border-2 border-[#ef4444] text-xs sm:text-sm text-[#991b1b] flex items-center justify-between gap-2 shake-anim';
+            } else if (tone === 'hint') {
+                banner.className = 'mb-4 px-3 py-2 rounded-lg bg-[#fefce8] border-2 border-[#eab308] text-xs sm:text-sm text-[#854d0e] flex items-center justify-between gap-2 line-pop';
+            } else if (tone === 'success') {
+                banner.className = 'mb-4 px-3 py-2 rounded-lg bg-[#f0fdf4] border-2 border-[#22c55e] text-xs sm:text-sm text-[#166534] flex items-center justify-between gap-2';
+            } else {
+                banner.className = 'mb-4 px-3 py-2 rounded-lg bg-[#f8fafc]/90 border-2 border-[#cbd5e1] text-xs sm:text-sm text-[#334155] flex items-center justify-between gap-2';
+            }
+        }
+
+        function renderNotebookAll() {
+            renderHistorySteps();
+            renderActiveLine();
+            renderInlineActionPanel();
+            checkAutoSimplifiedState();
+        }
+
+        function renderHistorySteps() {
+            const container = document.getElementById('notebook-history');
+            container.innerHTML = '';
+
+            Notebook.historyLines.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = 'flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-white/60 border-l-4 border-[#93c5fd]';
+                row.innerHTML = `
+                    <div class="math-font text-base sm:text-lg font-bold text-[#334155] tracking-wide">
+                        ${item.eq}
+                    </div>
+                    <div class="text-xs italic text-[#64748b] flex items-center gap-1">
+                        <span>✓</span> <span>${item.comment}</span>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function renderActiveLine() {
+            const leftZone = document.getElementById('left-zone');
+            const rightZone = document.getElementById('right-zone');
+            leftZone.innerHTML = '';
+            rightZone.innerHTML = '';
+
+            // Подсветка противоположной стороны, если слагаемое выбрано кликом
+            leftZone.classList.toggle('clickable-side-hint', Notebook.selectedTermId && Notebook.selectedSide === 'right');
+            rightZone.classList.toggle('clickable-side-hint', Notebook.selectedTermId && Notebook.selectedSide === 'left');
+
+            const buildTermTile = (term, index, sideName) => {
+                // Если это слагаемое только что перенесли через "=" и нужно выбрать ему знак прямо в строке!
+                if (Notebook.pendingSign && Notebook.pendingSign.termId === term.id) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'term-pending-sign rounded-xl px-3 py-1.5 flex items-center gap-2 line-pop';
+                    const absVal = Math.abs(term.coeff);
+                    const bodyText = term.isVar ? (absVal === 1 ? 'x' : `${absVal}x`) : `${absVal}`;
+
+                    wrapper.innerHTML = `
+                        <span class="text-[11px] font-bold text-[#92400e] hidden sm:inline">Знак:</span>
+                        <button onclick="resolvePendingSign('+', event)" class="pixel-btn px-2.5 py-1 rounded bg-[#4ade80] hover:bg-[#22c55e] text-[#064e3b] math-font font-black text-base" title="Плюс (+)">+</button>
+                        <button onclick="resolvePendingSign('-', event)" class="pixel-btn px-2.5 py-1 rounded bg-[#f87171] hover:bg-[#ef4444] text-white math-font font-black text-base" title="Минус (-)">−</button>
+                        <span class="math-font font-black text-lg sm:text-xl text-[#1e293b] px-1">${bodyText}</span>
+                        <button onclick="cancelPendingSign(event)" class="text-xs text-[#78350f] hover:text-black font-bold ml-1" title="Вернуть обратно">✕</button>
+                    `;
+                    return wrapper;
+                }
+
+                const el = document.createElement('div');
+                el.id = term.id;
+                const isSelected = Notebook.selectedTermId === term.id;
+                const isMerging = Notebook.pendingMerge && (Notebook.pendingMerge.id1 === term.id || Notebook.pendingMerge.id2 === term.id);
+
+                let styleClass = term.isVar ? 'term-x' : 'term-num';
+                if (isSelected) styleClass += ' term-selected';
+                if (isMerging) styleClass += ' term-merging';
+
+                el.className = `term-tile ${styleClass} rounded-xl px-3.5 py-2 math-font font-extrabold text-lg sm:text-xl flex items-center gap-1`;
+                el.draggable = !Notebook.pendingSign && !Notebook.pendingMerge && !Notebook.pendingDivision;
+                el.innerText = term.formatForLine(index === 0);
+
+                // Drag события
+                el.addEventListener('dragstart', (e) => {
+                    if (Notebook.pendingSign || Notebook.pendingMerge) {
+                        e.preventDefault();
+                        return;
+                    }
+                    SoundFX.pickup();
+                    draggedId = term.id;
+                    draggedFromSide = sideName;
+                    e.dataTransfer.setData('text/plain', term.id);
+                });
+
+                // Сброс одного слагаемого прямо на другое слагаемое (для сложения подобных или переноса)
+                el.addEventListener('dragover', (e) => e.preventDefault());
+                el.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    document.getElementById('left-zone').classList.remove('drop-target-active');
+                    document.getElementById('right-zone').classList.remove('drop-target-active');
+
+                    if (!draggedId || draggedId === term.id) return;
+
+                    if (draggedFromSide === sideName) {
+                        // На одной стороне -> складываем подобные!
+                        tryStartMerge(draggedId, term.id, sideName);
+                    } else {
+                        // С другой стороны -> переносим через "="
+                        tryTransposeTerm(draggedId, draggedFromSide, sideName);
+                    }
+                    draggedId = null;
+                });
+
+                // Клик мышкой / пальцем
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    handleTermTileClick(term.id, sideName);
+                });
+
+                return el;
+            };
+
+            Notebook.left.forEach((t, i) => leftZone.appendChild(buildTermTile(t, i, 'left')));
+            Notebook.right.forEach((t, i) => rightZone.appendChild(buildTermTile(t, i, 'right')));
+        }
+
+        /* =========================================================================
+           7. ЛОГИКА ПЕРЕТАСКИВАНИЯ И КЛИКОВ (БЕЗ ПУСТЫХ ЧАСТЕЙ И ЛОЖНЫХ НУЛЕЙ!)
+        ========================================================================= */
+        function handleTermTileClick(termId, sideName) {
+            if (Notebook.pendingSign || Notebook.pendingMerge || Notebook.isSolved) return;
+            SoundFX.pickup();
+
+            // Если ничего не выбрано -> выбираем
+            if (!Notebook.selectedTermId) {
+                Notebook.selectedTermId = termId;
+                Notebook.selectedSide = sideName;
+                const arr = sideName === 'left' ? Notebook.left : Notebook.right;
+                const t = arr.find(item => item.id === termId);
+                setStatusMessage('👆', `Выбрано слагаемое <b>${t.formatSigned()}</b>: нажми на подобное слагаемое рядом, чтобы сложить их, или на противоположную часть через «=» для переноса.`, 'normal');
+                renderActiveLine();
+                return;
+            }
+
+            // Повторный клик по тому же слагаемому снимает выделение
+            if (Notebook.selectedTermId === termId) {
+                Notebook.selectedTermId = null;
+                Notebook.selectedSide = null;
+                setStatusMessage('✍️', 'Выделение снято. Перетащи или выбери слагаемое.', 'normal');
+                renderActiveLine();
+                return;
+            }
+
+            // Клик по другому слагаемому на ТОЙ ЖЕ стороне -> пробуем сложить подобные
+            if (Notebook.selectedSide === sideName) {
+                const firstId = Notebook.selectedTermId;
+                Notebook.selectedTermId = null;
+                Notebook.selectedSide = null;
+                tryStartMerge(firstId, termId, sideName);
+                return;
+            }
+
+            // Клик по слагаемому на ПРОТИВОПОЛОЖНОЙ стороне -> переносим выбранное слагаемое через "="
+            const movingId = Notebook.selectedTermId;
+            const fromSide = Notebook.selectedSide;
+            Notebook.selectedTermId = null;
+            Notebook.selectedSide = null;
+            tryTransposeTerm(movingId, fromSide, sideName);
+        }
+
+        function handleSideZoneClick(targetSide, event) {
+            if (!Notebook.selectedTermId || Notebook.pendingSign || Notebook.pendingMerge) return;
+            if (Notebook.selectedSide !== targetSide) {
+                const movingId = Notebook.selectedTermId;
+                const fromSide = Notebook.selectedSide;
+                Notebook.selectedTermId = null;
+                Notebook.selectedSide = null;
+                tryTransposeTerm(movingId, fromSide, targetSide);
+            }
+        }
+
+        // Настройка Drag & Drop на пустые области левой и правой стороны уравнения
+        function setupZoneDragAndDrop() {
+            ['left', 'right'].forEach(sideName => {
+                const zone = document.getElementById(`${sideName}-zone`);
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (draggedFromSide && draggedFromSide !== sideName) {
+                        zone.classList.add('drop-target-active');
+                    }
+                });
+                zone.addEventListener('dragleave', () => {
+                    zone.classList.remove('drop-target-active');
+                });
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('drop-target-active');
+                    if (!draggedId) return;
+                    if (draggedFromSide !== sideName) {
+                        tryTransposeTerm(draggedId, draggedFromSide, sideName);
+                    }
+                    draggedId = null;
+                });
+            });
+        }
+
+        /* =========================================================================
+           8. ПЕРЕНОС СЛАГАЕМОГО ЧЕРЕЗ «=» ПРЯМО В СТРОКЕ
+        ========================================================================= */
+        function tryTransposeTerm(termId, fromSide, toSide) {
+            const sourceArr = fromSide === 'left' ? Notebook.left : Notebook.right;
+            const targetArr = toSide === 'left' ? Notebook.left : Notebook.right;
+
+            // ЗАЩИТА ОТ ОПУСТОШЕНИЯ СТОРОНЫ (чтобы не появлялся искусственный 0!)
+            if (sourceArr.length <= 1) {
+                SoundFX.error();
+                setStatusMessage(
+                    '🛑',
+                    'Не уноси последнее слагаемое с этой стороны, иначе часть уравнения опустеет! Переноси слагаемые с другой стороны.',
+                    'error'
+                );
+                renderActiveLine();
+                return;
+            }
+
+            const idx = sourceArr.findIndex(t => t.id === termId);
+            if (idx === -1) return;
+
+            const term = sourceArr[idx];
+            const snapshotBeforeMove = Notebook.formatFullEquation();
+
+            // Перемещаем слагаемое на целевую сторону и включаем встроенный выбор знака прямо на нём
+            sourceArr.splice(idx, 1);
+            targetArr.push(term);
+
+            Notebook.pendingSign = {
+                termId: term.id,
+                fromSide,
+                toSide,
+                originalCoeff: term.coeff,
+                eqBefore: snapshotBeforeMove
+            };
+
+            SoundFX.drop();
+            setStatusMessage(
+                '⚡',
+                `Слагаемое <b>${term.formatSigned()}</b> перепрыгнуло через <b>«=»</b>! Выбери его новый знак прямо в строке (<b>+</b> или <b>−</b>):`,
+                'hint'
+            );
+            renderNotebookAll();
+        }
+
+        function resolvePendingSign(chosenSign, event) {
+            if (event) event.stopPropagation();
+            if (!Notebook.pendingSign) return;
+
+            const info = Notebook.pendingSign;
+            const targetArr = info.toSide === 'left' ? Notebook.left : Notebook.right;
+            const term = targetArr.find(t => t.id === info.termId);
+            if (!term) return;
+
+            const wasPositive = info.originalCoeff > 0;
+            const isCorrect = (chosenSign === '+' && !wasPositive) || (chosenSign === '-' && wasPositive);
+
+            if (isCorrect) {
+                // Сохраняем состояние ДО переноса в стек отмены и в историю тетради
+                const oldSignFormatted = term.formatSigned();
+                term.coeff = -info.originalCoeff;
+                const newSignFormatted = term.formatSigned();
+
+                // Для корректного Undo сохраняем снимок до переноса
+                const restoredLeft = (info.fromSide === 'left')
+                    ? [...Notebook.left, new Term(info.originalCoeff, term.isVar, term.id)]
+                    : Notebook.left.filter(t => t.id !== term.id).map(t => t.clone());
+                const restoredRight = (info.fromSide === 'right')
+                    ? [...Notebook.right, new Term(info.originalCoeff, term.isVar, term.id)]
+                    : Notebook.right.filter(t => t.id !== term.id).map(t => t.clone());
+
+                Notebook.undoStack.push({
+                    left: restoredLeft,
+                    right: restoredRight,
+                    historyLines: [...Notebook.historyLines]
+                });
+                document.getElementById('undo-btn').disabled = false;
+
+                // Если на целевой стороне был 0, убираем его
+                if (targetArr.length > 1) {
+                    const zeroIdx = targetArr.findIndex(t => !t.isVar && t.coeff === 0);
+                    if (zeroIdx !== -1) targetArr.splice(zeroIdx, 1);
+                }
+
+                Notebook.pushHistoryLine(info.eqBefore, `перенесли ${oldSignFormatted} через «=» как ${newSignFormatted}`);
+                Notebook.pendingSign = null;
+
+                SoundFX.success();
+                Player.addXP(5);
+                setStatusMessage('✅', `Верно! При переходе через «=» слагаемое <b>${oldSignFormatted}</b> стало <b>${newSignFormatted}</b>.`, 'success');
+                renderNotebookAll();
+            } else {
+                Player.signErrors++;
+                Player.streak = 0;
+                Player.updateHeader();
+                SoundFX.error();
+                setStatusMessage(
+                    '⚠️',
+                    `Ой! Было <b>${term.formatSigned()}</b>. При переносе через знак «=» знак обязательно меняется на противоположный!`,
+                    'error'
+                );
+            }
+        }
+
+        function cancelPendingSign(event) {
+            if (event) event.stopPropagation();
+            if (!Notebook.pendingSign) return;
+            const info = Notebook.pendingSign;
+            const targetArr = info.toSide === 'left' ? Notebook.left : Notebook.right;
+            const sourceArr = info.fromSide === 'left' ? Notebook.left : Notebook.right;
+
+            const idx = targetArr.findIndex(t => t.id === info.termId);
+            if (idx !== -1) {
+                const [term] = targetArr.splice(idx, 1);
+                term.coeff = info.originalCoeff;
+                sourceArr.push(term);
+            }
+            Notebook.pendingSign = null;
+            setStatusMessage('✍️', 'Перенос отменён.', 'normal');
+            renderNotebookAll();
+        }
+
+        /* =========================================================================
+           9. СЛОЖЕНИЕ ПОДОБНЫХ СЛАГАЕМЫХ ПРЯМО В СТРОКЕ
+        ========================================================================= */
+        function tryStartMerge(id1, id2, side) {
+            const arr = side === 'left' ? Notebook.left : Notebook.right;
+            const t1 = arr.find(t => t.id === id1);
+            const t2 = arr.find(t => t.id === id2);
+            if (!t1 || !t2) return;
+
+            // Проверка: нельзя складывать иксы с числами!
+            if (t1.isVar !== t2.isVar) {
+                SoundFX.error();
+                setStatusMessage(
+                    '🚫',
+                    `Нельзя складывать <b>${t1.formatSigned()}</b> и <b>${t2.formatSigned()}</b>! Иксы складываются только с иксами, а числа — только с числами.`,
+                    'error'
+                );
+                renderActiveLine();
+                return;
+            }
+
+            Notebook.pendingMerge = { side, id1, id2 };
+            SoundFX.pickup();
+            setStatusMessage(
+                '🧮',
+                `Посчитай сумму подобных слагаемых <b>${t1.formatForLine(true)} ${t2.formatForLine(false)}</b> в окошке прямо под строкой:`,
+                'hint'
+            );
+            renderNotebookAll();
+        }
+
+        function renderInlineActionPanel() {
+            const panel = document.getElementById('inline-action-panel');
+            const mergeBox = document.getElementById('inline-merge-box');
+            const divideBox = document.getElementById('inline-divide-box');
+
+            if (Notebook.pendingMerge) {
+                panel.classList.remove('hidden');
+                mergeBox.classList.remove('hidden');
+                divideBox.classList.add('hidden');
+
+                const arr = Notebook.pendingMerge.side === 'left' ? Notebook.left : Notebook.right;
+                const t1 = arr.find(t => t.id === Notebook.pendingMerge.id1);
+                const t2 = arr.find(t => t.id === Notebook.pendingMerge.id2);
+
+                if (t1 && t2) {
+                    document.getElementById('merge-expr-label').innerText = `${t1.formatForLine(true)} ${t2.formatForLine(false)} =`;
+                    const suffix = document.getElementById('merge-x-suffix');
+                    if (t1.isVar) suffix.classList.remove('hidden');
+                    else suffix.classList.add('hidden');
+
+                    const input = document.getElementById('inline-merge-input');
+                    input.value = '';
+                    setTimeout(() => input.focus(), 30);
+                }
+                return;
+            }
+
+            if (Notebook.pendingDivision && !Notebook.isSolved) {
+                panel.classList.remove('hidden');
+                mergeBox.classList.add('hidden');
+                divideBox.classList.remove('hidden');
+
+                const left = Notebook.left[0];
+                const right = Notebook.right[0];
+                const varTerm = left.isVar ? left : right;
+                const numTerm = left.isVar ? right : left;
+
+                document.getElementById('divide-explanation').innerHTML =
+                    `Осталось разделить число <b>${numTerm.coeff}</b> на коэффициент <b>${varTerm.coeff}</b> перед иксом:`;
+                const divisorStr = varTerm.coeff < 0 ? `(${varTerm.coeff})` : `${varTerm.coeff}`;
+                document.getElementById('divide-formula-label').innerText = `x = ${numTerm.coeff} : ${divisorStr} =`;
+
+                const input = document.getElementById('inline-divide-input');
+                input.value = '';
+                setTimeout(() => input.focus(), 30);
+                return;
+            }
+
+            panel.classList.add('hidden');
+            mergeBox.classList.add('hidden');
+            divideBox.classList.add('hidden');
+        }
+
+        function confirmInlineMerge() {
+            if (!Notebook.pendingMerge) return;
+            const input = document.getElementById('inline-merge-input');
+            const val = parseInt(input.value, 10);
+            if (isNaN(val)) {
+                SoundFX.error();
+                input.focus();
+                return;
+            }
+
+            const arr = Notebook.pendingMerge.side === 'left' ? Notebook.left : Notebook.right;
+            const i1 = arr.findIndex(t => t.id === Notebook.pendingMerge.id1);
+            const i2 = arr.findIndex(t => t.id === Notebook.pendingMerge.id2);
+            if (i1 === -1 || i2 === -1) return;
+
+            const t1 = arr[i1];
+            const t2 = arr[i2];
+            const expected = t1.coeff + t2.coeff;
+
+            if (val === expected) {
+                Notebook.saveStateForUndo();
+                const eqBefore = Notebook.formatFullEquation();
+                const mergedDesc = `${t1.formatForLine(true)} ${t2.formatForLine(false)} = ${expected}${t1.isVar ? 'x' : ''}`;
+
+                t1.coeff = expected;
+                arr.splice(i2, 1);
+
+                // Если в результате сложения получился 0 (например, 5 - 5 = 0)
+                if (t1.coeff === 0) {
+                    const idxNow = arr.findIndex(t => t.id === t1.id);
+                    if (idxNow !== -1) arr.splice(idxNow, 1);
+                    if (arr.length === 0) {
+                        arr.push(new Term(0, false));
+                    }
+                }
+
+                Notebook.pushHistoryLine(eqBefore, `привели подобные (${mergedDesc})`);
+                Notebook.pendingMerge = null;
+
+                SoundFX.success();
+                Player.addXP(5);
+                setStatusMessage('✅', `Отлично! Сложили подобные слагаемые: <b>${mergedDesc}</b>.`, 'success');
+                renderNotebookAll();
+            } else {
+                Player.mathErrors++;
+                Player.streak = 0;
+                Player.updateHeader();
+                SoundFX.error();
+                setStatusMessage('🧮', `Ошибка в счёте! Посчитай внимательнее: <b>${t1.coeff} + (${t2.coeff})</b>`, 'error');
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        function cancelInlineAction() {
+            Notebook.pendingMerge = null;
+            renderNotebookAll();
+        }
+
+        /* =========================================================================
+           10. ПРОВЕРКА УПРОЩЕНИЯ ДО ВИДА a·x = b И ФИНАЛЬНЫЙ ОТВЕТ
+        ========================================================================= */
+        function checkAutoSimplifiedState() {
+            if (Notebook.pendingSign || Notebook.pendingMerge || Notebook.isSolved) return;
+
+            if (Notebook.left.length === 1 && Notebook.right.length === 1) {
+                const l = Notebook.left[0];
+                const r = Notebook.right[0];
+                const hasOneVarAndOneNum = (l.isVar && !r.isVar) || (!l.isVar && r.isVar);
+
+                if (hasOneVarAndOneNum) {
+                    const varTerm = l.isVar ? l : r;
+                    const numTerm = l.isVar ? r : l;
+
+                    // Если коэффициент перед x уже равен 1 (например, x = 7 или 7 = x) -> уравнение сразу решено!
+                    if (varTerm.coeff === 1) {
+                        completeEquationVictory(numTerm.coeff);
+                        return;
+                    }
+
+                    // Иначе открываем встроенную строку деления прямо под уравнением
+                    Notebook.pendingDivision = true;
+                    renderInlineActionPanel();
+                    return;
+                }
+            }
+            Notebook.pendingDivision = false;
+            renderInlineActionPanel();
+        }
+
+        function confirmInlineDivision() {
+            const input = document.getElementById('inline-divide-input');
+            const val = parseInt(input.value, 10);
+            if (isNaN(val)) {
+                SoundFX.error();
+                input.focus();
+                return;
+            }
+
+            if (val === Notebook.root) {
+                const eqBefore = Notebook.formatFullEquation();
+                const l = Notebook.left[0];
+                const r = Notebook.right[0];
+                const varTerm = l.isVar ? l : r;
+                Notebook.pushHistoryLine(eqBefore, `разделили обе части на ${varTerm.coeff}`);
+
+                Notebook.left = [new Term(1, true)];
+                Notebook.right = [new Term(Notebook.root, false)];
+                Notebook.pendingDivision = false;
+                completeEquationVictory(Notebook.root);
+            } else {
+                Player.mathErrors++;
+                Player.streak = 0;
+                Player.updateHeader();
+                SoundFX.error();
+                setStatusMessage('⚠️', 'Неверное деление! Проверь знак и таблицу умножения.', 'error');
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        function completeEquationVictory(rootVal) {
+            Notebook.isSolved = true;
+            Notebook.pendingDivision = false;
+            renderHistorySteps();
+            renderActiveLine();
+            renderInlineActionPanel();
+
+            Player.solved++;
+            Player.streak++;
+            const bonusXP = 20 + Math.min(30, Player.streak * 5);
+            Player.addXP(bonusXP);
+
+            document.getElementById('victory-answer-text').innerText = `Ответ: x = ${rootVal} — Решено верно!`;
+            document.getElementById('victory-xp-gain').innerText = `+${bonusXP} XP`;
+            document.getElementById('victory-notebook-stamp').classList.remove('hidden');
+
+            setStatusMessage('🎉', `Молодец! Уравнение решено: <b>x = ${rootVal}</b>.`, 'success');
+            SoundFX.fanfare();
+            launchPixelConfetti();
+        }
+
+        /* =========================================================================
+           11. ЭКРАННАЯ КЛАВИАТУРА, ПОДСКАЗКА, ОТМЕНА И СВОЙ ПРИМЕР
+        ========================================================================= */
+        function getActiveInput() {
+            if (Notebook.pendingMerge) return document.getElementById('inline-merge-input');
+            if (Notebook.pendingDivision) return document.getElementById('inline-divide-input');
+            return null;
+        }
+
+        function numpadPress(char) {
+            const inp = getActiveInput();
+            if (!inp) return;
+            SoundFX.pickup();
+            if (char === '-') {
+                if (inp.value.startsWith('-')) inp.value = inp.value.substring(1);
+                else inp.value = '-' + inp.value;
+            } else {
+                inp.value += char;
+            }
+            inp.focus();
+        }
+
+        function numpadBackspace() {
+            const inp = getActiveInput();
+            if (!inp) return;
+            SoundFX.pickup();
+            inp.value = inp.value.slice(0, -1);
+            inp.focus();
+        }
+
+        function undoStep() {
+            if (Notebook.pendingSign) {
+                cancelPendingSign();
+                return;
+            }
+            if (Notebook.pendingMerge) {
+                cancelInlineAction();
+                return;
+            }
+            if (Notebook.undoStack.length === 0) return;
+
+            const prev = Notebook.undoStack.pop();
+            Notebook.left = prev.left;
+            Notebook.right = prev.right;
+            Notebook.historyLines = prev.historyLines;
+            Notebook.isSolved = false;
+            Notebook.pendingDivision = false;
+            document.getElementById('victory-notebook-stamp').classList.add('hidden');
+            document.getElementById('undo-btn').disabled = Notebook.undoStack.length === 0;
+
+            SoundFX.pickup();
+            setStatusMessage('↩', 'Вернулись на шаг назад.', 'normal');
+            renderNotebookAll();
+        }
+
+        function giveHint() {
+            SoundFX.pickup();
+            if (Notebook.pendingSign) {
+                const orig = Notebook.pendingSign.originalCoeff;
+                setStatusMessage('💡', `Подсказка: у слагаемого был знак <b>${orig > 0 ? '+' : '−'}</b>, значит после переноса через «=» выбери <b>${orig > 0 ? '−' : '+'}</b>!`, 'hint');
+                return;
+            }
+
+            const lVars = Notebook.left.filter(t => t.isVar);
+            const rVars = Notebook.right.filter(t => t.isVar);
+            const lNums = Notebook.left.filter(t => !t.isVar);
+            const rNums = Notebook.right.filter(t => !t.isVar);
+
+            if (lVars.length > 1) {
+                setStatusMessage('💡', `Слева есть подобные слагаемые с иксом (<b>${lVars[0].formatSigned()}</b> и <b>${lVars[1].formatSigned()}</b>). Нажми на них по очереди или перетащи друг на друга!`, 'hint');
+            } else if (rVars.length > 1) {
+                setStatusMessage('💡', `Справа есть подобные слагаемые с иксом (<b>${rVars[0].formatSigned()}</b> и <b>${rVars[1].formatSigned()}</b>). Сложи их!`, 'hint');
+            } else if (lNums.length > 1) {
+                setStatusMessage('💡', `Слева есть два обычных числа (<b>${lNums[0].formatSigned()}</b> и <b>${lNums[1].formatSigned()}</b>). Наложи одно на другое, чтобы посчитать!`, 'hint');
+            } else if (rNums.length > 1) {
+                setStatusMessage('💡', `Справа есть два числа (<b>${rNums[0].formatSigned()}</b> и <b>${rNums[1].formatSigned()}</b>). Объедини их!`, 'hint');
+            } else if (lVars.length > 0 && rVars.length > 0) {
+                setStatusMessage('💡', `Иксы стоят по разные стороны от «=». Перетащи <b>${rVars[0].formatSigned()}</b> с правой части в левую!`, 'hint');
+            } else if (lVars.length === 1 && lNums.length > 0) {
+                setStatusMessage('💡', `Чтобы икс остался один слева, перетащи число <b>${lNums[0].formatSigned()}</b> направо через знак «=»!`, 'hint');
+            } else if (rVars.length === 1 && rNums.length > 0) {
+                setStatusMessage('💡', `Чтобы икс остался один справа, перетащи число <b>${rNums[0].formatSigned()}</b> налево через знак «=»!`, 'hint');
+            } else if (Notebook.pendingDivision) {
+                setStatusMessage('💡', `Раздели свободное число на коэффициент перед X и впиши ответ в жёлтое окошко.`, 'hint');
+            }
+        }
+
+        // Ввод собственного примера прямо в шапке тетради
+        function toggleCustomBar() {
+            const bar = document.getElementById('custom-input-bar');
+            bar.classList.toggle('hidden');
+            if (!bar.classList.contains('hidden')) {
+                document.getElementById('custom-eq-field').focus();
+            }
+        }
+
+        function parseSideString(str) {
+            const cleaned = str.replace(/\s+/g, '').replace(/−/g, '-');
+            if (!cleaned) return null;
+            const tokens = cleaned.match(/[+-]?[^+-]+/g) || [];
+            const list = [];
+            for (const tok of tokens) {
+                if (tok.toLowerCase().includes('x')) {
+                    const cStr = tok.toLowerCase().replace('x', '');
+                    let c = 1;
+                    if (cStr === '' || cStr === '+') c = 1;
+                    else if (cStr === '-') c = -1;
+                    else c = parseInt(cStr, 10);
+                    if (isNaN(c)) return null;
+                    list.push(new Term(c, true));
+                } else {
+                    const n = parseInt(tok, 10);
+                    if (isNaN(n)) return null;
+                    list.push(new Term(n, false));
+                }
+            }
+            return list;
+        }
+
+        function applyCustomEquation() {
+            const raw = document.getElementById('custom-eq-field').value.trim();
+            const parts = raw.split('=');
+            if (parts.length !== 2) {
+                setStatusMessage('⚠️', 'В уравнении должен быть ровно один знак «=» (например: 3x - 5 = x + 7).', 'error');
+                return;
+            }
+            const leftTerms = parseSideString(parts[0]);
+            const rightTerms = parseSideString(parts[1]);
+            if (!leftTerms || !rightTerms || leftTerms.length === 0 || rightTerms.length === 0) {
+                setStatusMessage('⚠️', 'Не удалось прочитать уравнение. Пример записи: 4x - 8 = 2x + 6', 'error');
+                return;
+            }
+
+            const lx = leftTerms.filter(t => t.isVar).reduce((s, t) => s + t.coeff, 0);
+            const ln = leftTerms.filter(t => !t.isVar).reduce((s, t) => s + t.coeff, 0);
+            const rx = rightTerms.filter(t => t.isVar).reduce((s, t) => s + t.coeff, 0);
+            const rn = rightTerms.filter(t => !t.isVar).reduce((s, t) => s + t.coeff, 0);
+
+            const netX = lx - rx;
+            const netN = rn - ln;
+            if (netX === 0 || netN % netX !== 0) {
+                setStatusMessage('⚠️', 'У этого уравнения нет целого корня. Введите пример с целым ответом!', 'error');
+                return;
+            }
+
+            Notebook.root = netN / netX;
+            Notebook.left = leftTerms;
+            Notebook.right = rightTerms;
+            Notebook.undoStack = [];
+            Notebook.historyLines = [];
+            Notebook.pendingSign = null;
+            Notebook.pendingMerge = null;
+            Notebook.pendingDivision = false;
+            Notebook.isSolved = false;
+            document.getElementById('victory-notebook-stamp').classList.add('hidden');
+            document.getElementById('custom-input-bar').classList.add('hidden');
+
+            SoundFX.success();
+            setStatusMessage('✍️', 'Свой пример записан в тетрадь! Решай по шагам.', 'success');
+            renderNotebookAll();
+        }
+
+        /* =========================================================================
+           12. ГОРЯЧИЕ КЛАВИШИ И ПИКСЕЛЬНЫЙ САЛЮТ
+        ========================================================================= */
+        window.addEventListener('keydown', (e) => {
+            if (Notebook.pendingSign) {
+                if (e.key === '+' || e.key === '=') resolvePendingSign('+');
+                if (e.key === '-') resolvePendingSign('-');
+                if (e.key === 'Escape') cancelPendingSign();
+                return;
+            }
+            if (e.key === 'Enter') {
+                if (Notebook.pendingMerge) confirmInlineMerge();
+                else if (Notebook.pendingDivision) confirmInlineDivision();
+            }
+            if (e.key === 'Escape' && Notebook.pendingMerge) {
+                cancelInlineAction();
+            }
+        });
+
+        function launchPixelConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const palette = ['#facc15', '#4ade80', '#38bdf8', '#f472b6', '#fb923c'];
+            const blocks = Array.from({ length: 55 }, () => ({
+                x: canvas.width / 2 + (Math.random() - 0.5) * 260,
+                y: canvas.height / 2,
+                vx: (Math.random() - 0.5) * 12,
+                vy: -Math.random() * 12 - 3,
+                size: Math.floor(Math.random() * 6 + 6),
+                color: palette[Math.floor(Math.random() * palette.length)],
+                alpha: 1
+            }));
+
+            let frame = 0;
+            function step() {
+                frame++;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                blocks.forEach(b => {
+                    b.x += b.vx;
+                    b.y += b.vy;
+                    b.vy += 0.35;
+                    if (frame > 35) b.alpha -= 0.03;
+                    ctx.globalAlpha = Math.max(0, b.alpha);
+                    ctx.fillStyle = b.color;
+                    ctx.fillRect(Math.round(b.x), Math.round(b.y), b.size, b.size);
+                });
+                if (frame < 75) requestAnimationFrame(step);
+                else ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            requestAnimationFrame(step);
+        }
+
+        window.onload = () => {
+            Player.updateHeader();
+            setupZoneDragAndDrop();
+            generateNewEquation();
+        };
+    </script>
+</body>
+</html>
