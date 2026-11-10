@@ -2,516 +2,689 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тетрадь Алгебры: Живые Уравнения</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Тетрадь Алгебры: Бесшовная Механика</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,500;0,700;0,800;1,700&family=Press+Start+2P&family=Rubik:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=JetBrains+Mono:wght@700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         :root {
-            --paper-bg: #fdfdfd;
-            --grid-line: #c7ddef;
-            --margin-line: #f28b82;
-            --ink-blue: #1e3a8a;
-            --ink-x: #1d4ed8;
-            --ink-num: #0f766e;
-            --pencil-gray: #64748b;
-            --desk-bg: #2b3548;
-            --pixel-border: #1e293b;
+            --paper-bg: #f8fafc;
+            --grid-line: rgba(59, 130, 246, 0.22);
+            --margin-line: #ef4444;
+            --ink-blue: #1d4ed8;
+            --ink-faded: rgba(30, 64, 175, 0.52);
+            --pixel-border: #0f172a;
         }
 
-        body {
-            font-family: 'Rubik', sans-serif;
-            background-color: var(--desk-bg);
-            background-image: 
-                radial-gradient(#3b4963 15%, transparent 16%),
-                radial-gradient(#3b4963 15%, transparent 16%);
-            background-size: 24px 24px;
-            background-position: 0 0, 12px 12px;
-            color: #1e293b;
-            margin: 0;
-            overflow-x: hidden;
+        * {
+            box-sizing: border-box;
             user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .pixel-font {
-            font-family: 'Press Start 2P', monospace;
-            letter-spacing: -0.5px;
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: manipulation;
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #1e293b;
+            background-image: radial-gradient(#334155 1px, transparent 1px);
+            background-size: 16px 16px;
         }
 
         .math-font {
             font-family: 'JetBrains Mono', monospace;
         }
 
-        /* Настоящий лист школьной тетради в синюю клеточку */
-        .notebook-sheet {
+        .pixel-font {
+            font-family: 'Press Start 2P', monospace;
+        }
+
+        /* Рукописный эффект шариковой ручки прямо по клеткам */
+        .pen-writing {
+            font-family: 'Caveat', cursive;
+            letter-spacing: 0.5px;
+        }
+
+        /* Настоящий тетрадный лист в синюю клеточку */
+        .notebook-page {
             background-color: var(--paper-bg);
             background-image:
                 linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
                 linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
             background-size: 24px 24px;
             position: relative;
-            box-shadow: 
-                0 0 0 4px #1e293b,
-                8px 8px 0px #0f172a,
-                0 20px 40px rgba(0,0,0,0.4);
+            box-shadow: 6px 6px 0px #0f172a;
         }
 
-        /* Красная линия полей справа */
-        .notebook-sheet::after {
+        /* Левый переплет со скобами */
+        .notebook-page::after {
             content: '';
             position: absolute;
             top: 0;
             bottom: 0;
-            right: 56px;
-            width: 2px;
-            background-color: var(--margin-line);
+            left: 0;
+            width: 10px;
+            background: repeating-linear-gradient(
+                to bottom,
+                #475569 0px,
+                #475569 12px,
+                transparent 12px,
+                transparent 36px
+            );
+            border-right: 2px solid #94a3b8;
+            opacity: 0.45;
             pointer-events: none;
-            z-index: 1;
+            z-index: 3;
         }
 
-        @media (max-width: 640px) {
-            .notebook-sheet::after {
-                right: 28px;
+        /* Красная линия полей */
+        .notebook-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 22px;
+            width: 2px;
+            background-color: var(--margin-line);
+            opacity: 0.75;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        @media (min-width: 640px) {
+            .notebook-page::before {
+                right: 48px;
             }
         }
 
-        /* Пиксельная рамка для кнопок и карточек */
-        .pixel-box {
-            border: 3px solid #1e293b;
-            box-shadow: 4px 4px 0px #1e293b;
-            transition: transform 0.1s, box-shadow 0.1s;
-        }
-
-        .pixel-box:active:not(:disabled) {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0px #1e293b;
-        }
-
+        /* Пиксель-арт кнопки и плашки */
         .pixel-btn {
-            border: 2px solid #1e293b;
-            box-shadow: 3px 3px 0px #1e293b;
+            border: 2px solid var(--pixel-border);
+            box-shadow: 0 3px 0 var(--pixel-border);
+            transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.12s ease;
+        }
+        .pixel-btn:active:not(:disabled) {
+            transform: translateY(3px);
+            box-shadow: 0 0px 0 var(--pixel-border);
+        }
+
+        .mode-tab {
+            border: 2px solid #0f172a;
+            box-shadow: 0 3px 0 #0f172a;
             transition: all 0.1s ease;
         }
-
-        .pixel-btn:hover:not(:disabled) {
-            transform: translate(-1px, -1px);
-            box-shadow: 4px 4px 0px #1e293b;
+        .mode-tab.active {
+            background-color: #facc15;
+            color: #0f172a;
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #0f172a;
         }
 
-        .pixel-btn:active:not(:disabled) {
-            transform: translate(2px, 2px);
-            box-shadow: 1px 1px 0px #1e293b;
+        /* Цветовые стили для слагаемых в пиксель-арт эстетике */
+        .style-pos {
+            background-color: #3b82f6;
+            border: 3px solid #0f172a;
+            box-shadow: 0 5px 0 #0f172a, inset 0 2px 0 rgba(255,255,255,0.35);
+            color: #ffffff;
+        }
+        .style-neg {
+            background-color: #ef4444;
+            border: 3px solid #0f172a;
+            box-shadow: 0 5px 0 #0f172a, inset 0 2px 0 rgba(255,255,255,0.35);
+            color: #ffffff;
+        }
+        .style-zero {
+            background-color: #64748b;
+            border: 3px solid #0f172a;
+            box-shadow: 0 5px 0 #0f172a, inset 0 2px 0 rgba(255,255,255,0.25);
+            color: #ffffff;
         }
 
-        /* Живые карточки слагаемых в строке уравнения */
-        .term-tile {
+        /* Общий контейнер слагаемого */
+        .term-unit {
             position: relative;
-            cursor: grab;
-            border: 2px solid #1e293b;
-            box-shadow: 3px 3px 0px #1e293b;
-            transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s, background-color 0.15s;
-            z-index: 10;
-        }
-
-        .term-tile:hover {
-            transform: translateY(-3px);
-            box-shadow: 4px 6px 0px #1e293b;
+            display: inline-flex;
+            align-items: stretch;
+            border-radius: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            font-size: clamp(1.1rem, 4.3vw, 1.6rem);
+            color: #ffffff;
+            touch-action: none;
+            transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.14s ease;
             z-index: 20;
         }
 
-        .term-tile:active {
-            cursor: grabbing;
-            transform: translateY(1px);
-            box-shadow: 1px 2px 0px #1e293b;
+        .num-chip {
+            padding: 8px 14px;
+            border-radius: 7px;
+            cursor: grab;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
         }
 
-        /* Слагаемое с X (синие чернила/стикер) */
-        .term-x {
-            background-color: #dbeafe;
-            color: #1e3a8a;
-            border-color: #1e3a8a;
-            box-shadow: 3px 3px 0px #1e3a8a;
+        .coeff-part {
+            padding: 8px 10px 8px 13px;
+            border-radius: 7px 0 0 7px;
+            cursor: grab;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 2px dashed rgba(15, 23, 42, 0.55);
+            position: relative;
+            min-height: 44px;
+            transition: transform 0.15s ease, filter 0.15s ease;
         }
 
-        /* Обычное число (бирюзово-изумрудные чернила/стикер) */
-        .term-num {
-            background-color: #ccfbf1;
-            color: #115e59;
-            border-color: #115e59;
-            box-shadow: 3px 3px 0px #115e59;
+        .coeff-part:hover {
+            filter: brightness(1.1);
         }
 
-        /* Выбранное слагаемое */
-        .term-selected {
-            background-color: #fef08a !important;
-            color: #854d0e !important;
-            border-color: #ca8a04 !important;
-            box-shadow: 0 0 0 3px #facc15, 4px 6px 0px #854d0e !important;
-            transform: translateY(-5px) scale(1.05);
-            z-index: 30;
+        @keyframes pulseReady {
+            0%, 100% { background-color: rgba(250, 204, 21, 0); }
+            50% { background-color: rgba(250, 204, 21, 0.38); }
         }
 
-        /* Слагаемое в режиме ожидания выбора знака после переноса */
-        .term-pending-sign {
-            background-color: #fffbeb !important;
-            border: 2px dashed #d97706 !important;
-            box-shadow: 4px 4px 0px #b45309 !important;
-            animation: gentlePulse 1.2s infinite ease-in-out;
+        .coeff-ready {
+            animation: pulseReady 1.2s infinite ease-in-out;
         }
 
-        /* Слагаемые, выбранные для сложения подобных */
-        .term-merging {
-            background-color: #f3e8ff !important;
-            border-color: #7e22ce !important;
-            color: #581c87 !important;
-            box-shadow: 3px 3px 0px #7e22ce !important;
-            transform: translateY(-3px);
+        .var-part {
+            padding: 8px 13px 8px 10px;
+            border-radius: 0 7px 7px 0;
+            cursor: grab;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            background: rgba(15, 23, 42, 0.22);
         }
 
-        @keyframes gentlePulse {
+        /* Капсула слияния и блок дроби прямо в рабочей строке */
+        .active-capsule {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            background-color: #fef08a;
+            border: 3px solid #0f172a;
+            box-shadow: 0 5px 0 #0f172a;
+            color: #0f172a;
+            font-weight: 800;
+            font-size: clamp(1.05rem, 4vw, 1.45rem);
+            animation: capsuleJitter 0.9s infinite ease-in-out;
+        }
+
+        @keyframes capsuleJitter {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.04); }
         }
 
-        /* Зона левой или правой части уравнения */
-        .equation-side-zone {
-            min-height: 60px;
-            min-width: 110px;
-            border: 2px dashed transparent;
+        .active-fraction-box {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 14px;
             border-radius: 10px;
-            transition: all 0.2s ease;
+            background-color: #fef08a;
+            border: 3px solid #0f172a;
+            box-shadow: 0 5px 0 #0f172a;
+            color: #0f172a;
+            font-weight: 800;
+            font-size: clamp(1rem, 3.8vw, 1.35rem);
+            line-height: 1.15;
         }
 
-        .equation-side-zone.drop-target-active {
-            background-color: rgba(59, 130, 246, 0.1);
-            border-color: #2563eb;
+        .fraction-bar {
+            width: 100%;
+            height: 3px;
+            background-color: #0f172a;
+            margin: 3px 0;
+            border-radius: 2px;
         }
 
-        .equation-side-zone.clickable-side-hint {
-            background-color: rgba(250, 204, 21, 0.18);
-            border-color: #ca8a04;
-            cursor: pointer;
+        @media (min-width: 640px) {
+            .num-chip { padding: 10px 18px; }
+            .coeff-part { padding: 10px 13px 10px 16px; }
+            .var-part { padding: 10px 16px 10px 12px; }
         }
 
-        /* Тряска при ошибке */
-        @keyframes shakeError {
+        /* Перетаскиваемый клон */
+        .dragging-clone {
+            position: fixed !important;
+            z-index: 9999 !important;
+            pointer-events: none !important;
+            box-shadow: 0 14px 0 rgba(15, 23, 42, 0.35) !important;
+            transform: scale(1.1) rotate(2deg);
+            transition: none !important;
+        }
+
+        /* Подсветка при наведении для слияния */
+        .merge-glow {
+            transform: translateY(-3px) scale(1.06);
+            box-shadow: 0 0 0 4px #facc15, 0 6px 0 #0f172a !important;
+        }
+
+        .incompatible-glow {
+            animation: shakeErr 0.3s ease-in-out;
+            box-shadow: 0 0 0 4px #f43f5e, 0 5px 0 #0f172a !important;
+        }
+
+        @keyframes shakeErr {
             0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-8px); }
-            40%, 80% { transform: translateX(8px); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
         }
 
-        .shake-anim {
-            animation: shakeError 0.4s ease-in-out;
+        /* Вязкий портал "=" */
+        .portal-wrapper {
+            position: relative;
+            width: 42px;
+            height: 98px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
-        /* Плавное появление новой строки */
-        @keyframes popIn {
-            0% { opacity: 0; transform: translateY(8px) scale(0.97); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
+        @media (min-width: 640px) {
+            .portal-wrapper {
+                width: 56px;
+                height: 112px;
+            }
         }
 
-        .line-pop {
-            animation: popIn 0.25s ease-out forwards;
+        /* Тетрадная запись ручкой сверху */
+        .notebook-ink-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: baseline;
+            column-gap: 8px;
+            width: 100%;
+            max-width: 540px;
         }
 
-        /* Скрытие стрелочек у input number */
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
+        .ink-step-row {
+            color: var(--ink-faded);
+            font-size: clamp(1.3rem, 4.6vw, 1.65rem);
+            line-height: 24px;
+            min-height: 24px;
+            transition: color 0.15s ease, transform 0.15s ease;
         }
-        input[type=number] {
-            -moz-appearance: textfield;
-            appearance: textfield;
+        .ink-step-row:hover {
+            color: var(--ink-blue);
         }
 
-        #confetti-canvas {
-            position: fixed;
-            inset: 0;
+        .ink-current-row {
+            color: var(--ink-blue);
+            font-size: clamp(1.5rem, 5.2vw, 1.95rem);
+            line-height: 24px;
+            min-height: 24px;
+            font-weight: 700;
+        }
+
+        .ink-underline-sim {
+            border-bottom: 2px solid #1d4ed8;
+            padding-bottom: 1px;
+        }
+
+        /* История решений сверху (тетрадные строчки) */
+        .history-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(30, 64, 175, 0.25) transparent;
+        }
+        .history-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .history-scroll::-webkit-scrollbar-thumb {
+            background-color: rgba(30, 64, 175, 0.25);
+            border-radius: 4px;
+        }
+
+        /* Плавный подъем при открытом NumPad */
+        #equation-stage {
+            transition: padding-bottom 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        body.numpad-open #equation-stage {
+            padding-bottom: 245px;
+        }
+
+        @media (min-height: 760px) {
+            body.numpad-open #equation-stage {
+                padding-bottom: 210px;
+            }
+        }
+
+        /* --- СТИЛИ РЕЖИМА РОГАЛИКА (SLAY THE SPIRE) --- */
+        .rogue-target-highlight {
+            box-shadow: 0 0 0 4px #facc15, 0 6px 0 #0f172a !important;
+            transform: scale(1.06);
+        }
+
+        .rogue-node {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 3px solid #0f172a;
+            box-shadow: 0 4px 0 #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: transform 0.15s ease, filter 0.15s ease;
+            position: relative;
+            z-index: 10;
+        }
+        .rogue-node.available {
+            cursor: pointer;
+            animation: pulseNode 1.2s infinite ease-in-out;
+            background-color: #fef08a;
+        }
+        .rogue-node.completed {
+            background-color: #94a3b8;
+            opacity: 0.7;
+        }
+        .rogue-node.locked {
+            background-color: #e2e8f0;
+            opacity: 0.55;
+        }
+        @keyframes pulseNode {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+        }
+
+        @keyframes floatDmg {
+            0% { opacity: 1; transform: translateY(0) scale(0.9); }
+            100% { opacity: 0; transform: translateY(-34px) scale(1.15); }
+        }
+        .dmg-popup {
+            position: absolute;
+            font-weight: 900;
+            font-size: 1.35rem;
             pointer-events: none;
-            z-index: 100;
+            animation: floatDmg 0.85s ease-out forwards;
+            z-index: 80;
+            text-shadow: 2px 2px 0 #0f172a;
         }
     </style>
 </head>
-<body class="min-h-screen py-4 px-2 sm:px-6 flex flex-col items-center">
+<body class="flex flex-col items-center justify-between p-1.5 sm:p-3">
 
-    <canvas id="confetti-canvas"></canvas>
-
-    <!-- ВЕРХНЯЯ ПАНЕЛЬ: ОБЛОЖКА ТЕТРАДИ И ОПЫТ -->
-    <header class="w-full max-w-4xl mb-4">
-        <div class="bg-[#1e3a8a] text-white pixel-box rounded-xl p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3">
-            
-            <!-- Название и уровень опыта -->
-            <div class="flex items-center gap-3">
-                <div class="w-11 h-11 bg-[#facc15] text-[#1e293b] pixel-btn rounded-lg flex items-center justify-center text-xl font-black shrink-0">
-                    📓
-                </div>
-                <div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <h1 class="pixel-font text-xs sm:text-sm text-[#facc15] tracking-wide">ТЕТРАДЬ АЛГЕБРЫ</h1>
-                        <span id="rank-badge" class="text-xs font-bold bg-[#172554] text-[#93c5fd] px-2 py-0.5 rounded border border-[#3b82f6]">
-                            Ур. 1
-                        </span>
-                    </div>
-                    <!-- Полоска опыта XP -->
-                    <div class="flex items-center gap-2 mt-1.5">
-                        <div class="w-36 sm:w-48 h-3 bg-[#0f172a] border-2 border-[#93c5fd] rounded-sm overflow-hidden">
-                            <div id="xp-bar" class="h-full bg-[#4ade80] transition-all duration-300" style="width: 0%"></div>
-                        </div>
-                        <span id="xp-label" class="math-font text-xs font-bold text-[#e2e8f0]">⭐ 0 XP</span>
-                    </div>
-                </div>
+    <!-- Верхняя компактная пиксель-панель уровней и действий -->
+    <header class="w-full max-w-4xl flex flex-wrap items-center justify-between gap-1.5 bg-slate-900 px-2.5 sm:px-4 py-2 rounded-xl border-2 border-slate-950 shadow-[0_4px_0_#0f172a] z-30">
+        
+        <!-- Переключатель режимов (Тренажёр vs Отдельная мини-игра "⚔️ Путь") -->
+        <div class="flex items-center gap-1 sm:gap-1.5 overflow-x-auto py-0.5">
+            <div id="trainer-tabs" class="flex items-center gap-1 sm:gap-1.5">
+                <button onclick="selectMode('lvl1')" id="mode-lvl1" class="mode-tab bg-slate-800 text-slate-200 px-2.5 py-1 rounded-lg font-extrabold text-xs sm:text-sm whitespace-nowrap">
+                    1x
+                </button>
+                <button onclick="selectMode('lvl2')" id="mode-lvl2" class="mode-tab active bg-slate-800 text-slate-200 px-2.5 py-1 rounded-lg font-extrabold text-xs sm:text-sm whitespace-nowrap">
+                    2x
+                </button>
+                <button onclick="selectMode('dec')" id="mode-dec" class="mode-tab bg-slate-800 text-slate-200 px-2.5 py-1 rounded-lg font-extrabold text-xs sm:text-sm whitespace-nowrap">
+                    0,5
+                </button>
+                <button onclick="selectMode('hard')" id="mode-hard" class="mode-tab bg-slate-800 text-slate-200 px-2.5 py-1 rounded-lg font-extrabold text-xs sm:text-sm whitespace-nowrap">
+                    ★
+                </button>
+                <button onclick="openCustomModal()" id="mode-custom" class="mode-tab bg-indigo-600 text-white px-2.5 py-1 rounded-lg font-extrabold text-xs sm:text-sm whitespace-nowrap">
+                    + Свой
+                </button>
             </div>
 
-            <!-- Счётчики серии и ошибок + Звук -->
-            <div class="flex items-center gap-2 sm:gap-3">
-                <div class="bg-[#172554] border-2 border-[#3b82f6] rounded-lg px-2.5 py-1 flex items-center gap-1.5" title="Серия верных решений подряд">
-                    <span>🔥</span>
-                    <span class="text-xs text-[#bfdbfe]">Серия:</span>
-                    <span id="streak-val" class="math-font font-extrabold text-sm text-[#facc15]">0</span>
-                </div>
+            <button onclick="toggleRogueMode()" id="mode-rogue" class="mode-tab bg-rose-600 text-white px-2.5 py-1 rounded-lg font-extrabold text-xs sm:text-sm whitespace-nowrap">
+                ⚔️ Путь
+            </button>
 
-                <div class="bg-[#172554] border-2 border-[#3b82f6] rounded-lg px-2.5 py-1 flex items-center gap-1.5" title="Решено уравнений за урок">
-                    <span>✅</span>
-                    <span class="text-xs text-[#bfdbfe] hidden sm:inline">Решено:</span>
-                    <span id="solved-val" class="math-font font-extrabold text-sm text-[#4ade80]">0</span>
+            <!-- Полоска уровня и перков (видна только внутри мини-игры "⚔️ Путь") -->
+            <div id="rogue-top-bar" class="hidden items-center gap-1.5 pl-1">
+                <div class="bg-slate-950 border-2 border-slate-700 px-2 py-0.5 rounded-lg flex items-center gap-1.5 text-xs font-black text-amber-300">
+                    <span>LVL <span id="rogue-lvl-num">1</span></span>
+                    <div class="w-12 sm:w-16 h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-600">
+                        <div id="rogue-xp-bar" class="h-full bg-amber-400 transition-all duration-300" style="width: 0%"></div>
+                    </div>
                 </div>
-
-                <button id="sound-btn" onclick="SoundFX.toggle()" class="pixel-btn bg-[#3b82f6] hover:bg-[#60a5fa] text-white w-9 h-9 rounded-lg flex items-center justify-center text-sm" title="Звук Вкл/Выкл">
-                    🔊
-                </button>
+                <div id="rogue-perks-list" class="flex items-center gap-1"></div>
             </div>
         </div>
 
-        <!-- ВКЛАДКИ ВЫБОРА ТИПА УРАВНЕНИЙ (КАК ЗАКЛАДКИ В ТЕТРАДИ) -->
-        <div class="flex flex-wrap items-center justify-between gap-2 mt-3 px-1">
-            <div class="flex flex-wrap items-center gap-1.5">
-                <button onclick="selectMode(1)" id="mode-tab-1" class="pixel-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#facc15] text-[#1e293b]">
-                    1. Простые (2x + 4 = 10)
-                </button>
-                <button onclick="selectMode(2)" id="mode-tab-2" class="pixel-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#e2e8f0] text-[#1e293b]">
-                    2. Иксы с двух сторон
-                </button>
-                <button onclick="selectMode(3)" id="mode-tab-3" class="pixel-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#e2e8f0] text-[#1e293b]">
-                    3. Песочница (много слагаемых)
-                </button>
-                <button onclick="toggleCustomBar()" id="mode-tab-custom" class="pixel-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#dbeafe] text-[#1e3a8a]">
-                    ✏️ Свой пример
-                </button>
+        <!-- Счетчик и кнопки управления -->
+        <div class="flex items-center gap-1.5 ml-auto">
+            <div id="score-badge" class="bg-slate-950 border-2 border-slate-800 px-2.5 py-1 rounded-lg flex items-center gap-1 text-amber-400 font-black text-xs sm:text-sm">
+                <span>★</span>
+                <span id="score-counter">0</span>
             </div>
-
-            <!-- Быстрые действия над тетрадью -->
-            <div class="flex items-center gap-1.5">
-                <button id="undo-btn" onclick="undoStep()" disabled class="pixel-btn px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white text-[#1e293b] disabled:opacity-40">
-                    ↩ Назад
-                </button>
-                <button onclick="giveHint()" class="pixel-btn px-2.5 py-1.5 rounded-lg text-xs font-bold bg-[#fef08a] text-[#854d0e]">
-                    💡 Подсказка
-                </button>
-                <button onclick="generateNewEquation()" class="pixel-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#4ade80] text-[#064e3b]">
-                    🔄 Новый пример
-                </button>
-            </div>
-        </div>
-
-        <!-- ВСТРОЕННАЯ СТРОКА ВВОДА СВОЕГО ПРИМЕРА (без модальных окон!) -->
-        <div id="custom-input-bar" class="hidden mt-2 bg-[#eff6ff] pixel-box rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2 text-xs font-bold text-[#1e3a8a]">
-                <span>✏️ Впиши любое уравнение:</span>
-            </div>
-            <div class="flex flex-1 min-w-[220px] items-center gap-2">
-                <input id="custom-eq-field" type="text" placeholder="Например: 5x - 6 = 2x + 9" 
-                    class="flex-1 px-3 py-1.5 rounded-lg border-2 border-[#1e3a8a] math-font text-sm font-bold text-[#1e293b] focus:outline-none bg-white" />
-                <button onclick="applyCustomEquation()" class="pixel-btn px-3 py-1.5 rounded-lg bg-[#1e3a8a] text-white text-xs font-bold">
-                    Записать в тетрадь
-                </button>
-                <button onclick="toggleCustomBar()" class="text-xs text-[#64748b] hover:text-[#1e293b] font-bold px-2">
-                    ✕
-                </button>
-            </div>
+            <button onclick="undoStep()" id="undo-btn" disabled class="pixel-btn bg-slate-700 hover:bg-slate-600 disabled:opacity-35 text-white px-2.5 py-1 rounded-lg font-extrabold text-xs sm:text-sm" title="Шаг назад">
+                ↩
+            </button>
+            <button onclick="startNewEquation()" id="refresh-btn" class="pixel-btn bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-2.5 py-1 rounded-lg font-black text-xs sm:text-sm" title="Новый пример">
+                ↻
+            </button>
         </div>
     </header>
 
-    <!-- ГЛАВНЫЙ ЛИСТ РАБОЧЕЙ ТЕТРАДИ В КЛЕТОЧКУ -->
-    <main class="w-full max-w-4xl flex-1 flex flex-col">
-        <div class="notebook-sheet rounded-2xl flex-1 p-4 sm:p-8 pr-14 sm:pr-20 flex flex-col justify-between min-h-[500px]">
-            
-            <div>
-                <!-- Шапка тетрадного листа: Номер задания и рукописная памятка -->
-                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b-2 border-[#93c5fd]/70">
-                    <div class="flex items-center gap-2">
-                        <span id="task-title" class="math-font font-extrabold text-sm sm:text-base text-[#1e3a8a] bg-[#dbeafe]/80 px-2.5 py-0.5 rounded border border-[#93c5fd]">
-                            Задание №1. Решите уравнение:
-                        </span>
-                    </div>
-                    <!-- Ненавязчивая статистика точности на полях -->
-                    <div class="math-font text-xs text-[#64748b] flex items-center gap-3">
-                        <span title="Ошибки при смене знака">Знаки: <b id="err-sign" class="text-[#dc2626]">0</b></span>
-                        <span title="Ошибки в вычислениях">Счёт: <b id="err-math" class="text-[#dc2626]">0</b></span>
-                    </div>
-                </div>
+    <!-- ЧИСТЫЙ ТЕТРАДНЫЙ ЛИСТ -->
+    <main id="notebook-main" class="w-full max-w-4xl flex-1 my-1.5 sm:my-2 px-1 sm:px-2 flex flex-col overflow-hidden">
+        <div class="notebook-page flex-1 rounded-2xl border-[3px] border-slate-900 flex flex-col justify-between p-2.5 sm:p-5 pl-4 sm:pl-7 pr-7 sm:pr-14 overflow-hidden relative">
 
-                <!-- Подсказка управления (как работать в тетради) -->
-                <div id="status-banner" class="mb-4 px-3 py-2 rounded-lg bg-[#f8fafc]/90 border-2 border-[#cbd5e1] text-xs sm:text-sm text-[#334155] flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-2">
-                        <span id="status-icon" class="text-base">✍️</span>
-                        <span id="status-text" class="font-medium">
-                            Перетаскивай слагаемые через <b>«=»</b> (знак сменится!) или накладывай подобные друг на друга, чтобы посчитать. Можно и просто <b>нажимать</b> на них!
-                        </span>
+            <!-- МИНИМАЛИСТИЧНАЯ АРЕНА БОЯ (Видна только в режиме "⚔️ Путь") -->
+            <div id="rogue-hud" class="hidden w-full grid grid-cols-3 items-center gap-1.5 sm:gap-3 bg-slate-900 text-white px-2.5 py-1.5 rounded-xl border-[3px] border-slate-950 shadow-[0_4px_0_#0f172a] mb-1 z-30 select-none">
+                
+                <!-- ЛЕВО: ГЕРОЙ -->
+                <div id="rogue-hero-card" class="relative flex items-center gap-2">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-lg sm:text-xl shrink-0">
+                        🧙‍♂️
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-1 text-xs sm:text-sm font-black text-emerald-300">
+                            <span>❤️</span>
+                            <span id="hero-hp-text">10/10</span>
+                            <span id="hero-shield-badge" class="hidden text-sky-300 ml-1">🛡️</span>
+                        </div>
+                        <div class="w-full max-w-[90px] h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-700 mt-0.5">
+                            <div id="hero-hp-bar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 100%"></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- ИСТОРИЯ ПРЕДЫДУЩИХ СТРОЧЕК РЕШЕНИЯ (Как записи ручкой в тетради) -->
-                <div id="notebook-history" class="space-y-3 mb-4">
-                    <!-- Сюда добавляются уже выполненные шаги уравнения -->
-                </div>
-
-                <!-- АКТИВНАЯ ИНТЕРАКТИВНАЯ СТРОКА УРАВНЕНИЯ -->
-                <div id="active-equation-wrapper" class="my-2 py-3 px-2 sm:px-4 rounded-xl bg-[#eff6ff]/70 border-2 border-[#60a5fa] shadow-sm transition-all">
-                    
-                    <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 min-h-[68px]" id="active-equation-row">
-                        
-                        <!-- Левая часть уравнения -->
-                        <div id="left-zone" onclick="handleSideZoneClick('left', event)" 
-                             class="equation-side-zone flex flex-wrap items-center justify-end gap-2 p-2">
-                        </div>
-
-                        <!-- Знак РАВНО (граница переноса) -->
-                        <div class="flex flex-col items-center mx-1 select-none">
-                            <div class="w-10 h-10 rounded-lg bg-white border-2 border-[#1e3a8a] shadow-[2px_2px_0px_#1e3a8a] flex items-center justify-center math-font text-2xl font-black text-[#dc2626]">
-                                =
-                            </div>
-                        </div>
-
-                        <!-- Правая часть уравнения -->
-                        <div id="right-zone" onclick="handleSideZoneClick('right', event)" 
-                             class="equation-side-zone flex flex-wrap items-center justify-start gap-2 p-2">
-                        </div>
-
+                <!-- ЦЕНТР: ВОЛНА И АКТИВНЫЕ СПОСОБНОСТИ -->
+                <div class="flex flex-col items-center justify-center text-center">
+                    <div class="text-[10px] sm:text-xs font-black text-slate-400 tracking-wider uppercase">
+                        Бой <span id="rogue-wave-num" class="text-amber-300">1</span>
                     </div>
-
-                    <!-- ВСТРОЕННАЯ ПАНЕЛЬ ВЫЧИСЛЕНИЯ (открывается прямо под строкой, без модальных окон!) -->
-                    <div id="inline-action-panel" class="hidden mt-3 pt-3 border-t-2 border-dashed border-[#93c5fd] flex flex-col items-center line-pop">
-                        
-                        <!-- Режим 1: Сложение подобных слагаемых прямо в тетради -->
-                        <div id="inline-merge-box" class="hidden flex flex-col items-center w-full">
-                            <div class="text-xs font-bold text-[#1e3a8a] mb-2 flex items-center gap-1.5">
-                                <span>🧮 Складываем подобные слагаемые прямо в строке:</span>
-                            </div>
-                            <div class="flex flex-wrap items-center justify-center gap-2 bg-white px-4 py-2.5 rounded-xl border-2 border-[#1e293b] shadow-[3px_3px_0px_#1e293b]">
-                                <span id="merge-expr-label" class="math-font text-lg sm:text-xl font-extrabold text-[#1e3a8a]">5x - 2x =</span>
-                                <div class="flex items-center gap-1">
-                                    <input id="inline-merge-input" type="number" placeholder="?" autocomplete="off"
-                                        class="w-20 px-2 py-1 text-center math-font text-xl font-black text-[#1e293b] bg-[#fef9c3] border-2 border-[#1e293b] rounded focus:outline-none" />
-                                    <span id="merge-x-suffix" class="math-font text-xl font-black text-[#1d4ed8]">x</span>
-                                </div>
-                                <button onclick="confirmInlineMerge()" class="pixel-btn px-3 py-1.5 rounded-lg bg-[#4ade80] text-[#064e3b] text-xs font-extrabold">
-                                    Записать ↵
-                                </button>
-                                <button onclick="cancelInlineAction()" class="pixel-btn px-2.5 py-1.5 rounded-lg bg-[#f1f5f9] text-[#475569] text-xs font-bold">
-                                    Отмена
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Режим 2: Финальный шаг деления (нахождение X прямо на следующей строчке) -->
-                        <div id="inline-divide-box" class="hidden flex flex-col items-center w-full">
-                            <div id="divide-explanation" class="text-xs font-bold text-[#1e3a8a] mb-2 text-center">
-                                Делим обе части уравнения на число перед X:
-                            </div>
-                            <div class="flex flex-wrap items-center justify-center gap-2 bg-white px-4 py-2.5 rounded-xl border-2 border-[#1e293b] shadow-[3px_3px_0px_#1e293b]">
-                                <span id="divide-formula-label" class="math-font text-lg sm:text-xl font-extrabold text-[#1e3a8a]">x = 12 : 3 =</span>
-                                <input id="inline-divide-input" type="number" placeholder="?" autocomplete="off"
-                                    class="w-20 px-2 py-1 text-center math-font text-xl font-black text-[#1e293b] bg-[#fef9c3] border-2 border-[#1e293b] rounded focus:outline-none" />
-                                <button onclick="confirmInlineDivision()" class="pixel-btn px-3 py-1.5 rounded-lg bg-[#4ade80] text-[#064e3b] text-xs font-extrabold">
-                                    Ответ ↵
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Компактная экранная цифровая клавиатура (удобно на телефоне, планшете и доске) -->
-                        <div id="inline-numpad" class="mt-3 flex flex-wrap items-center justify-center gap-1.5 max-w-md">
-                            <button onclick="numpadPress('-')" class="pixel-btn w-9 h-9 rounded bg-[#fee2e2] text-[#991b1b] math-font font-black text-base">−</button>
-                            <button onclick="numpadPress('1')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">1</button>
-                            <button onclick="numpadPress('2')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">2</button>
-                            <button onclick="numpadPress('3')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">3</button>
-                            <button onclick="numpadPress('4')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">4</button>
-                            <button onclick="numpadPress('5')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">5</button>
-                            <button onclick="numpadPress('6')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">6</button>
-                            <button onclick="numpadPress('7')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">7</button>
-                            <button onclick="numpadPress('8')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">8</button>
-                            <button onclick="numpadPress('9')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">9</button>
-                            <button onclick="numpadPress('0')" class="pixel-btn w-9 h-9 rounded bg-white text-[#1e293b] math-font font-bold text-sm">0</button>
-                            <button onclick="numpadBackspace()" class="pixel-btn px-2.5 h-9 rounded bg-[#f1f5f9] text-[#475569] font-bold text-xs">⌫</button>
-                        </div>
-
+                    <div id="rogue-active-skills" class="flex items-center gap-1.5 mt-0.5">
+                        <button onclick="useMagnetSortSkill()" id="skill-magnet-btn" class="hidden pixel-btn bg-indigo-500 hover:bg-indigo-400 disabled:opacity-40 text-white font-black text-[10px] sm:text-xs px-2 py-0.5 rounded-md" title="Сортировка иксов и чисел">
+                            🧲 <span id="skill-magnet-cd">Готово</span>
+                        </button>
+                        <button onclick="useParityScissorsSkill()" id="skill-scissors-btn" class="hidden pixel-btn bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-slate-950 font-black text-[10px] sm:text-xs px-2 py-0.5 rounded-md" title="Поделить чётное уравнение на 2">
+                            ✂️ :2
+                        </button>
                     </div>
                 </div>
 
-                <!-- ШТАМП О РЕШЕНИИ ПРИМЕРА (Появляется прямо в тетради, как оценка учителя зелёной пастой) -->
-                <div id="victory-notebook-stamp" class="hidden my-4 p-4 rounded-xl bg-[#dcfce7]/90 border-2 border-[#16a34a] shadow-[4px_4px_0px_#15803d] flex flex-wrap items-center justify-between gap-3 line-pop">
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-xl bg-[#22c55e] text-white border-2 border-[#14532d] flex items-center justify-center text-2xl font-black">
-                            5+
-                        </div>
-                        <div>
-                            <div class="math-font font-black text-base sm:text-lg text-[#14532d]" id="victory-answer-text">
-                                Ответ: x = 4 — Решено верно!
-                            </div>
-                            <div class="text-xs text-[#166534] font-semibold">
-                                Отличная работа в тетради! Начислено <span id="victory-xp-gain" class="font-extrabold">+25 XP</span>
-                            </div>
+                <!-- ПРАВО: ВРАГ И ЕГО ТАЙМЕР ШАГОВ -->
+                <div id="rogue-enemy-card" class="relative flex items-center justify-end gap-2">
+                    <div class="flex flex-col items-end">
+                        <div class="flex items-center gap-1.5">
+                            <span class="bg-amber-400 text-slate-950 border-2 border-slate-950 px-1.5 py-0.5 rounded-md font-black text-xs sm:text-sm flex items-center gap-0.5" title="Через сколько твоих действий враг атакует">
+                                ⏳<span id="enemy-timer-text">4</span>
+                            </span>
+                            <span class="bg-rose-500/20 border border-rose-400 text-rose-300 px-1.5 py-0.5 rounded-md font-black text-xs sm:text-sm" title="Урон врага">
+                                <span id="enemy-dmg-text">1</span>🗡️
+                            </span>
                         </div>
                     </div>
-                    <button onclick="generateNewEquation()" class="pixel-btn px-4 py-2.5 rounded-xl bg-[#facc15] hover:bg-[#fde047] text-[#1e293b] font-extrabold text-xs sm:text-sm">
-                        Следующий пример ➔
-                    </button>
+                    <div id="enemy-avatar" class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-rose-500/20 border-2 border-rose-400 flex items-center justify-center text-lg sm:text-xl shrink-0">
+                        👾
+                    </div>
                 </div>
+
             </div>
 
-            <!-- НИЖНЯЯ ШПАРГАЛКА НА ПОЛЯХ ТЕТРАДИ -->
-            <div class="mt-6 pt-3 border-t-2 border-[#cbd5e1] flex flex-wrap items-center justify-between gap-3 text-xs text-[#475569]">
-                <div class="flex flex-wrap items-center gap-4">
-                    <span class="flex items-center gap-1.5">
-                        <span class="inline-block w-3 h-3 rounded-sm bg-[#dbeafe] border border-[#1e3a8a]"></span>
-                        <b>Иксы (с переменной x)</b> — собираем с одной стороны
-                    </span>
-                    <span class="flex items-center gap-1.5">
-                        <span class="inline-block w-3 h-3 rounded-sm bg-[#ccfbf1] border border-[#115e59]"></span>
-                        <b>Числа</b> — собираем с другой стороны
-                    </span>
+            <!-- ОКНО ВЫБОРА ПЕРКА ПРИ ПОВЫШЕНИИ УРОВНЯ (3 карточки) -->
+            <div id="rogue-perk-modal" class="hidden absolute inset-0 bg-slate-950/90 z-50 flex flex-col items-center justify-center p-3 sm:p-5 text-white">
+                <div class="text-amber-300 font-black text-base sm:text-xl mb-1">⬆️ НОВЫЙ УРОВЕНЬ!</div>
+                <div class="text-slate-300 text-xs sm:text-sm font-bold mb-3">Выбери одно улучшение:</div>
+                <div id="rogue-perk-choices" class="w-full max-w-md flex flex-col gap-2.5"></div>
+            </div>
+
+            <!-- ОКНО ПОРАЖЕНИЯ В МИНИ-ИГРЕ -->
+            <div id="rogue-gameover-modal" class="hidden absolute inset-0 bg-slate-950/90 z-50 flex flex-col items-center justify-center p-4 text-white text-center">
+                <div class="text-4xl mb-2">💀</div>
+                <div class="text-rose-400 font-black text-lg sm:text-2xl mb-1">ЗАБЕГ ОКОНЧЕН</div>
+                <div class="text-slate-300 text-xs sm:text-sm font-bold mb-4">Побеждено врагов: <span id="rogue-final-waves" class="text-amber-300 font-black">0</span></div>
+                <button onclick="initRogueRun()" class="pixel-btn bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-2.5 rounded-xl text-sm sm:text-base">
+                    Начать заново ↻
+                </button>
+            </div>
+
+            <!-- РУКОПИСНАЯ ЗАПИСЬ ПРЯМО ПО КЛЕТОЧКАМ СВЕРХУ (Без громоздких плашек) -->
+            <div id="history-container" class="history-scroll overflow-y-auto max-h-[42%] sm:max-h-[46%] flex flex-col items-center px-1 pt-1 pb-1 z-10 select-none">
+            </div>
+
+            <!-- Тонкая тетрадная линейка-разделитель -->
+            <div class="w-full flex items-center justify-center my-0.5 opacity-45 pointer-events-none z-10">
+                <div class="h-[1px] flex-1 border-b border-dashed border-blue-400"></div>
+            </div>
+
+            <!-- Активная игровая зона (посередине) -->
+            <div id="equation-stage" class="flex-1 flex flex-col items-center justify-center relative z-20 my-auto">
+                
+                <div class="w-full flex items-center justify-center gap-1 sm:gap-3 min-h-[115px] sm:min-h-[130px]">
+                    
+                    <!-- Левая сторона -->
+                    <div id="left-side" class="flex-1 flex flex-wrap items-center justify-end gap-1.5 sm:gap-2.5 min-h-[84px] p-1 sm:p-2 rounded-2xl">
+                    </div>
+
+                    <!-- Вязкий портал "=" -->
+                    <div id="portal-zone" class="portal-wrapper select-none">
+                        <svg id="portal-svg" class="w-full h-full overflow-visible" viewBox="0 0 60 112">
+                            <defs>
+                                <linearGradient id="portalGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.1"/>
+                                    <stop offset="50%" stop-color="#6366f1" stop-opacity="0.8"/>
+                                    <stop offset="100%" stop-color="#ec4899" stop-opacity="0.1"/>
+                                </linearGradient>
+                            </defs>
+                            <path id="portal-membrane" d="M 30 8 Q 30 56 30 104" stroke="url(#portalGrad)" stroke-width="6" stroke-dasharray="4 3" stroke-linecap="round" fill="none"/>
+                        </svg>
+                        <div id="equals-sign" class="absolute w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-amber-300 border-[3px] border-slate-900 shadow-[0_4px_0_#0f172a] flex items-center justify-center math-font text-xl sm:text-2xl font-black text-slate-900 pointer-events-none transition-transform">
+                            =
+                        </div>
+                    </div>
+
+                    <!-- Правая сторона -->
+                    <div id="right-side" class="flex-1 flex flex-wrap items-center justify-start gap-1.5 sm:gap-2.5 min-h-[84px] p-1 sm:p-2 rounded-2xl">
+                    </div>
+
                 </div>
-                <div class="math-font text-[11px] text-[#dc2626] font-bold">
-                    Правило: перешёл через «=» ➔ поменяй знак!
+
+            </div>
+
+            <!-- Штамп "5+" и кнопка дальше при решении (прямо на листе, без огромных баннеров) -->
+            <div id="win-banner" class="hidden absolute bottom-4 inset-x-4 flex items-center justify-center z-40 pointer-events-none">
+                <div class="bg-amber-300 border-[3px] border-slate-900 shadow-[0_5px_0_#0f172a] rounded-xl px-4 py-2.5 flex items-center gap-4 pointer-events-auto animate-bounce">
+                    <span class="pen-writing text-3xl sm:text-4xl font-bold text-red-600 -rotate-6">5+</span>
+                    <button onclick="startNewEquation()" class="pixel-btn bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-4 py-2 rounded-lg text-sm sm:text-base">
+                        Дальше →
+                    </button>
                 </div>
             </div>
 
         </div>
     </main>
 
+    <!-- ВЫДВИЖНОЙ NUMPAD В ПИКСЕЛЬ-СТИЛЕ С ЗАПЯТОЙ -->
+    <div id="numpad-drawer" class="fixed inset-x-0 bottom-0 z-[500] transform translate-y-full transition-transform duration-300 ease-out flex justify-center px-1.5 pb-[max(0.4rem,env(safe-area-inset-bottom))] pointer-events-none">
+        <div class="w-full max-w-md bg-slate-900 text-white rounded-2xl p-2.5 sm:p-3.5 border-[3px] border-slate-950 shadow-[0_-6px_0_#0f172a] pointer-events-auto">
+            
+            <div class="flex items-center justify-between bg-slate-950 border-2 border-slate-800 rounded-xl px-3 py-1.5 mb-2">
+                <span id="numpad-formula" class="math-font text-base sm:text-lg font-extrabold text-slate-300">
+                    3x − 5x =
+                </span>
+                <div class="flex items-center gap-2">
+                    <div class="flex items-center">
+                        <span id="numpad-value" class="math-font text-xl sm:text-2xl font-black text-amber-300 min-w-[32px] text-right">?</span>
+                        <span id="numpad-x-unit" class="math-font text-xl sm:text-2xl font-black text-blue-400 hidden">x</span>
+                    </div>
+                    <button onclick="cancelActiveOperation()" class="pixel-btn ml-1 text-slate-300 hover:text-white bg-slate-800 w-7 h-7 rounded-lg font-bold flex items-center justify-center text-xs">
+                        ✕
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-1.5">
+                <button onclick="pressNumpad('7')" class="pixel-btn bg-slate-800 active:bg-slate-700 text-white math-font text-lg font-black py-2 rounded-lg">7</button>
+                <button onclick="pressNumpad('8')" class="pixel-btn bg-slate-800 active:bg-slate-700 text-white math-font text-lg font-black py-2 rounded-lg">8</button>
+                <button onclick="pressNumpad('9')" class="pixel-btn bg-slate-800 active:bg-slate-700 text-white math-font text-lg font-black py-2 rounded-lg">9</button>
+                <button onclick="pressNumpad('BACK')" class="pixel-btn bg-slate-700 active:bg-slate-600 text-slate-200 text-base font-black py-2 rounded-lg">⌫</button>
+
+                <button onclick="pressNumpad('4')" class="pixel-btn bg-slate-800 active:bg-slate-700 text-white math-font text-lg font-black py-2 rounded-lg">4</button>
+                <button onclick="pressNumpad('5')" class="pixel-btn bg-slate-800 active:bg-slate-700 text-white math-font text-lg font-black py-2 rounded-lg">5</button>
+                <button onclick="pressNumpad('6')" class="pixel-btn bg-slate-800 active:bg-slate-700 text-white math-font text-lg font-black py-2 rounded-lg">6</button>
+                <button onclick="pressNumpad('-')" class="pixel-btn bg-rose-600 active:bg-rose-500 text-white math-font text-lg font-black py-2 rounded-lg">±</button>
+
+                <button onclick="pressNumpad('1')" class="pixel-btn bg-slate-800 active:bg-slate-700 text-white math-font text-lg font-black py-2 rounded-lg">1</button>
+                <button onclick="pressNumpad('2')" class="pixel-btn bg-slate-800 active:bg-slate-700 text-white math-font text-lg font-black py-2 rounded-lg">2</button>
+                <button onclick="pressNumpad('3')" class="pixel-btn bg-slate-800 active:bg-slate-700 text-white math-font text-lg font-black py-2 rounded-lg">3</button>
+                <button onclick="submitNumpad()" class="pixel-btn row-span-2 bg-emerald-500 active:bg-emerald-400 text-slate-950 font-black text-lg rounded-lg flex items-center justify-center">
+                    OK
+                </button>
+
+                <button onclick="pressNumpad('0')" class="pixel-btn col-span-2 bg-slate-800 active:bg-slate-700 text-white math-font text-lg font-black py-2 rounded-lg">0</button>
+                <button onclick="pressNumpad(',')" class="pixel-btn bg-amber-400 active:bg-amber-300 text-slate-950 math-font text-xl font-black py-2 rounded-lg">,</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА КОНСТРУКТОРА СВОИХ ПРИМЕРОВ -->
+    <div id="custom-modal" class="hidden fixed inset-0 bg-slate-950/75 backdrop-blur-xs z-[600] flex items-center justify-center p-3">
+        <div class="bg-slate-100 rounded-2xl p-4 sm:p-5 w-full max-w-sm border-[3px] border-slate-900 shadow-[6px_6px_0_#0f172a]">
+            <h3 class="text-base font-black text-slate-900 mb-3">Свой пример</h3>
+            
+            <div class="space-y-2 mb-4">
+                <input type="text" id="custom-left-input" value="3x - 5" placeholder="Левая часть (3x - 5)" class="w-full math-font text-base font-bold p-2.5 bg-white border-2 border-slate-900 rounded-xl focus:outline-none" />
+                <div class="text-center font-black text-slate-500 text-lg">=</div>
+                <input type="text" id="custom-right-input" value="x + 7" placeholder="Правая часть (x + 7)" class="w-full math-font text-base font-bold p-2.5 bg-white border-2 border-slate-900 rounded-xl focus:outline-none" />
+                <p id="custom-error" class="hidden text-rose-600 text-xs font-bold text-center pt-1">Проверьте запись выражения</p>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="closeCustomModal()" class="pixel-btn flex-1 bg-slate-300 text-slate-900 font-black py-2.5 rounded-xl text-xs sm:text-sm">Отмена</button>
+                <button onclick="applyCustomEquation()" class="pixel-btn flex-1 bg-indigo-600 text-white font-black py-2.5 rounded-xl text-xs sm:text-sm">ОК</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         /* =========================================================================
-           1. ПИКСЕЛЬНЫЙ ЗВУКОВОЙ ДВИЖОК (Web Audio API)
+           1. АУДИО И ВИЗУАЛЬНЫЕ ЭФФЕКТЫ (WEB AUDIO API)
         ========================================================================= */
-        const SoundFX = {
+        const SoundEngine = {
             ctx: null,
-            enabled: true,
-
             init() {
                 if (!this.ctx) {
-                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                    if (AudioCtx) this.ctx = new AudioCtx();
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) this.ctx = new AudioContext();
                 }
-                if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
             },
-
-            toggle() {
-                this.enabled = !this.enabled;
-                document.getElementById('sound-btn').innerText = this.enabled ? '🔊' : '🔇';
-            },
-
-            beep(freq, type = 'square', duration = 0.09, vol = 0.07, endFreq = null) {
-                if (!this.enabled) return;
+            playTone(freq, type, duration, vol = 0.1) {
                 try {
                     this.init();
                     if (!this.ctx) return;
@@ -519,1018 +692,1641 @@
                     const gain = this.ctx.createGain();
                     osc.type = type;
                     osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-                    if (endFreq) {
-                        osc.frequency.exponentialRampToValueAtTime(endFreq, this.ctx.currentTime + duration);
-                    }
                     gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
                     osc.start();
                     osc.stop(this.ctx.currentTime + duration);
                 } catch (e) {}
             },
+            pickup() { this.playTone(340, 'square', 0.06, 0.06); },
+            portalSnap() { this.playTone(620, 'triangle', 0.11, 0.1); },
+            capsuleLock() { this.playTone(440, 'square', 0.09, 0.08); setTimeout(() => this.playTone(660, 'square', 0.12, 0.08), 70); },
+            success() { 
+                this.playTone(523.25, 'square', 0.1, 0.1); 
+                setTimeout(() => this.playTone(659.25, 'square', 0.1, 0.1), 100);
+                setTimeout(() => this.playTone(783.99, 'square', 0.22, 0.1), 200);
+            },
+            boing() { this.playTone(160, 'sawtooth', 0.15, 0.1); }
+        };
 
-            pickup() { this.beep(420, 'triangle', 0.07, 0.08, 560); },
-            drop() { this.beep(320, 'sine', 0.1, 0.09, 480); },
-            success() {
-                this.beep(523, 'triangle', 0.09, 0.1);
-                setTimeout(() => this.beep(659, 'triangle', 0.12, 0.1), 75);
+        const FX = {
+            canvas: null,
+            ctx: null,
+            particles: [],
+            init() {
+                if (this.canvas) return;
+                this.canvas = document.createElement('canvas');
+                this.canvas.style.position = 'fixed';
+                this.canvas.style.inset = '0';
+                this.canvas.style.pointerEvents = 'none';
+                this.canvas.style.zIndex = '99999';
+                document.body.appendChild(this.canvas);
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                requestAnimationFrame(() => this.loop());
             },
-            error() {
-                this.beep(170, 'sawtooth', 0.18, 0.09, 130);
+            resize() {
+                if (!this.canvas) return;
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
             },
-            fanfare() {
-                [523, 659, 784, 1046].forEach((n, i) => {
-                    setTimeout(() => this.beep(n, 'triangle', 0.2, 0.11), i * 85);
-                });
+            burst(x, y, colors = ['#3b82f6', '#10b981', '#facc15'], count = 16) {
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 2 + Math.random() * 5.5;
+                    this.particles.push({
+                        x, y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        size: 5 + Math.floor(Math.random() * 5),
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        alpha: 1,
+                        decay: 0.02 + Math.random() * 0.02
+                    });
+                }
+            },
+            loop() {
+                if (!this.ctx || !this.canvas) return;
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.16;
+                    p.alpha -= p.decay;
+                    if (p.alpha <= 0) {
+                        this.particles.splice(i, 1);
+                        continue;
+                    }
+                    this.ctx.save();
+                    this.ctx.globalAlpha = p.alpha;
+                    this.ctx.fillStyle = p.color;
+                    // Пиксельные квадратные частицы
+                    this.ctx.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size);
+                    this.ctx.restore();
+                }
+                requestAnimationFrame(() => this.loop());
             }
         };
 
         /* =========================================================================
-           2. СТАТИСТИКА И ПРОГРЕСС УЧЕНИКА
+           2. СОСТОЯНИЕ ИГРЫ И ПРОЦЕДУРНЫЙ ГЕНЕРАТОР УРОВНЕЙ
         ========================================================================= */
-        const Player = {
-            xp: 0,
-            streak: 0,
-            solved: 0,
-            signErrors: 0,
-            mathErrors: 0,
-            mode: 1,
-
-            addXP(amount) {
-                this.xp += amount;
-                this.updateHeader();
-            },
-
-            updateHeader() {
-                const level = Math.floor(this.xp / 100) + 1;
-                const progress = this.xp % 100;
-                document.getElementById('rank-badge').innerText = `Ур. ${level}`;
-                document.getElementById('xp-bar').style.width = `${progress}%`;
-                document.getElementById('xp-label').innerText = `⭐ ${this.xp} XP`;
-                document.getElementById('streak-val').innerText = this.streak;
-                document.getElementById('solved-val').innerText = this.solved;
-                document.getElementById('err-sign').innerText = this.signErrors;
-                document.getElementById('err-math').innerText = this.mathErrors;
+        const State = {
+            mode: 'lvl2', // 'lvl1' (1x), 'lvl2' (2x), 'dec' (0,5), 'hard' (★), 'rogue' (⚔️ Путь)
+            lastTrainerMode: 'lvl2',
+            score: 0,
+            left: [],
+            right: [],
+            history: [],
+            solved: false,
+            activeOp: null,
+            numpadBuffer: '',
+            livePreview: null,
+            rogue: {
+                initialized: false,
+                wave: 1,
+                level: 1,
+                xp: 0,
+                xpThresholds: [2, 3, 5, 7, 10, 14],
+                heroHp: 10,
+                heroMaxHp: 10,
+                shield: false,
+                enemy: null,
+                perks: [],
+                firstTransferUsedThisWave: false,
+                hadErrorThisWave: false,
+                enemyAttackedThisWave: false,
+                magnetCd: 0,
+                scissorsUsedThisWave: false
             }
         };
 
-        /* =========================================================================
-           3. МОДЕЛЬ СЛАГАЕМОГО (КАРТОЧКА В УРАВНЕНИИ)
-        ========================================================================= */
-        const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-        const randNonZero = (min, max) => {
+        let termIdCounter = 1;
+        function generateId() { return 't_' + (termIdCounter++); }
+
+        function createTerm(val, isX) {
+            return { id: generateId(), val: Number(val.toFixed(4)), isX };
+        }
+
+        function cloneSide(sideArr) {
+            return sideArr.map(t => ({ id: t.id, val: t.val, isX: t.isX }));
+        }
+
+        function randInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function randNonZero(min, max) {
             let v = 0;
             while (v === 0) v = randInt(min, max);
             return v;
-        };
-
-        class Term {
-            constructor(coeff, isVar, id = null) {
-                this.id = id || ('t_' + Math.random().toString(36).substring(2, 8));
-                this.coeff = coeff;       // Числовой коэффициент (например, -3 или 5)
-                this.isVar = isVar;       // true для слагаемых с 'x', false для обычных чисел
-            }
-
-            clone() {
-                return new Term(this.coeff, this.isVar, this.id);
-            }
-
-            // Форматирование слагаемого в зависимости от того, стоит ли оно первым в своей части уравнения
-            formatForLine(isFirstOnSide = false) {
-                const abs = Math.abs(this.coeff);
-                const signChar = this.coeff >= 0 ? '+' : '−';
-                let body = '';
-                if (this.isVar) {
-                    body = (abs === 1) ? 'x' : `${abs}x`;
-                } else {
-                    body = `${abs}`;
-                }
-
-                if (isFirstOnSide) {
-                    return this.coeff < 0 ? `−${body}` : body;
-                }
-                return `${signChar} ${body}`;
-            }
-
-            // Форматирование всегда со знаком (для подсказок и штампов)
-            formatSigned() {
-                const abs = Math.abs(this.coeff);
-                const signChar = this.coeff >= 0 ? '+' : '−';
-                const body = this.isVar ? (abs === 1 ? 'x' : `${abs}x`) : `${abs}`;
-                return `${signChar}${body}`;
-            }
         }
 
-        /* =========================================================================
-           4. СОСТОЯНИЕ ТЕТРАДИ И УРАВНЕНИЯ
-        ========================================================================= */
-        const Notebook = {
-            left: [],
-            right: [],
-            root: 0,
-            historyLines: [],     // Строки, уже записанные выше в тетради
-            undoStack: [],        // Стек для кнопки «Шаг назад»
-            selectedTermId: null,
-            selectedSide: null,
-
-            // Немодальные состояния прямо внутри активной строки:
-            // 1) Ожидание выбора знака после переноса через "="
-            pendingSign: null,    // { termId, side, originalCoeff, fromSide }
-            // 2) Сложение двух подобных слагаемых на одной стороне
-            pendingMerge: null,   // { side, id1, id2 }
-            // 3) Финальное деление (ax = b)
-            pendingDivision: false,
-            isSolved: false,
-
-            saveStateForUndo() {
-                this.undoStack.push({
-                    left: this.left.map(t => t.clone()),
-                    right: this.right.map(t => t.clone()),
-                    historyLines: [...this.historyLines]
-                });
-                document.getElementById('undo-btn').disabled = this.undoStack.length === 0;
-            },
-
-            formatFullEquation(leftArr = this.left, rightArr = this.right) {
-                const sideToStr = (arr) => {
-                    if (arr.length === 0) return '0';
-                    return arr.map((t, idx) => t.formatForLine(idx === 0)).join(' ');
-                };
-                return `${sideToStr(leftArr)} = ${sideToStr(rightArr)}`;
-            },
-
-            pushHistoryLine(eqText, commentText) {
-                this.historyLines.push({ eq: eqText, comment: commentText });
+        function selectMode(newMode) {
+            State.mode = newMode;
+            if (newMode !== 'rogue') {
+                State.lastTrainerMode = newMode;
             }
-        };
-
-        /* =========================================================================
-           5. ГЕНЕРАЦИЯ УРАВНЕНИЙ ДЛЯ 3 РЕЖИМОВ
-        ========================================================================= */
-        function selectMode(modeNum) {
-            Player.mode = modeNum;
-            [1, 2, 3].forEach(m => {
-                const btn = document.getElementById(`mode-tab-${m}`);
-                if (m === modeNum) {
-                    btn.className = 'pixel-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#facc15] text-[#1e293b]';
-                } else {
-                    btn.className = 'pixel-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#e2e8f0] text-[#1e293b]';
-                }
+            ['lvl1', 'lvl2', 'dec', 'hard', 'custom'].forEach(m => {
+                const btn = document.getElementById('mode-' + m);
+                if (btn) btn.classList.toggle('active', m === newMode);
             });
-            SoundFX.pickup();
-            generateNewEquation();
+
+            document.getElementById('trainer-tabs').classList.remove('hidden');
+            document.getElementById('rogue-top-bar').classList.add('hidden');
+            document.getElementById('rogue-top-bar').classList.remove('flex');
+            document.getElementById('score-badge').classList.remove('hidden');
+            document.getElementById('refresh-btn').classList.remove('hidden');
+            document.getElementById('rogue-hud').classList.add('hidden');
+            document.getElementById('rogue-perk-modal').classList.add('hidden');
+            document.getElementById('rogue-gameover-modal').classList.add('hidden');
+
+            const rogueBtn = document.getElementById('mode-rogue');
+            rogueBtn.classList.remove('active');
+            rogueBtn.innerText = '⚔️ Путь';
+
+            startNewEquation();
         }
 
-        function generateNewEquation() {
-            Notebook.undoStack = [];
-            Notebook.historyLines = [];
-            Notebook.selectedTermId = null;
-            Notebook.selectedSide = null;
-            Notebook.pendingSign = null;
-            Notebook.pendingMerge = null;
-            Notebook.pendingDivision = false;
-            Notebook.isSolved = false;
-
-            document.getElementById('undo-btn').disabled = true;
-            document.getElementById('victory-notebook-stamp').classList.add('hidden');
-            document.getElementById('active-equation-wrapper').classList.remove('hidden');
-
-            const root = randNonZero(-9, 9);
-            Notebook.root = root;
-
-            if (Player.mode === 1) {
-                // Простые: ax + b = c
-                const a = randNonZero(-5, 6);
-                const b = randNonZero(-15, 15);
-                const c = a * root + b;
-                if (Math.random() < 0.75) {
-                    Notebook.left = [new Term(a, true), new Term(b, false)];
-                    Notebook.right = [new Term(c, false)];
-                } else {
-                    Notebook.left = [new Term(c, false)];
-                    Notebook.right = [new Term(a, true), new Term(b, false)];
-                }
-            } else if (Player.mode === 2) {
-                // Иксы с двух сторон: ax + b = cx + d
-                let a = randNonZero(-6, 7);
-                let c = randNonZero(-5, 6);
-                while (a === c) c = randNonZero(-5, 6);
-                const b = randNonZero(-14, 14);
-                const d = (a - c) * root + b;
-
-                Notebook.left = [new Term(a, true), new Term(b, false)];
-                Notebook.right = [new Term(c, true)];
-                if (d !== 0) Notebook.right.push(new Term(d, false));
-            } else {
-                // Песочница (много слагаемых с обеих сторон)
-                let a1 = randNonZero(-5, 5);
-                let a2 = randNonZero(-4, 4);
-                if (a1 + a2 === 0) a2 = 2;
-                let c1 = randNonZero(-4, 5);
-                while (a1 + a2 === c1) c1 = randNonZero(-4, 5);
-
-                const b1 = randNonZero(-10, 10);
-                const b2 = randNonZero(-9, 9);
-                const leftVal = (a1 + a2) * root + b1 + b2;
-                const d1 = leftVal - c1 * root;
-
-                Notebook.left = [new Term(a1, true), new Term(b1, false), new Term(a2, true)];
-                if (b2 !== 0) Notebook.left.push(new Term(b2, false));
-                Notebook.right = [new Term(c1, true)];
-                if (d1 !== 0) Notebook.right.push(new Term(d1, false));
+        function toggleRogueMode() {
+            if (State.mode === 'rogue') {
+                selectMode(State.lastTrainerMode || 'lvl2');
+                return;
             }
+            State.mode = 'rogue';
+            document.getElementById('trainer-tabs').classList.add('hidden');
+            document.getElementById('rogue-top-bar').classList.remove('hidden');
+            document.getElementById('rogue-top-bar').classList.add('flex');
+            document.getElementById('score-badge').classList.add('hidden');
+            document.getElementById('refresh-btn').classList.add('hidden');
+            document.getElementById('rogue-hud').classList.remove('hidden');
 
-            document.getElementById('task-title').innerText = `Задание №${Player.solved + 1}. Решите уравнение:`;
-            setStatusMessage('✍️', 'Перетаскивай слагаемые через «=» или накладывай подобные друг на друга (можно также кликать по ним).', 'normal');
-            renderNotebookAll();
+            const rogueBtn = document.getElementById('mode-rogue');
+            rogueBtn.classList.add('active');
+            rogueBtn.innerText = '← Тренажёр';
+
+            if (!State.rogue.initialized) {
+                initRogueRun();
+            } else {
+                updateRogueHUD();
+                startNewEquation();
+            }
         }
 
         /* =========================================================================
-           6. ОТРИСОВКА ЛИСТА ТЕТРАДИ И ЖИВЫХ КАРТОЧЕК СЛАГАЕМЫХ
+           2.1 СБАЛАНСИРОВАННЫЙ РОГАЛИК (ТАЙМЕР ВРАГА И УМНЫЕ ПЕРКИ)
         ========================================================================= */
-        let draggedId = null;
-        let draggedFromSide = null;
+        const ALL_PERKS = [
+            {
+                id: 'boots',
+                icon: '👢',
+                name: 'Сапоги Переноса',
+                desc: 'Первый перенос через «=» в каждом примере не тратит ход ⏳'
+            },
+            {
+                id: 'inertia',
+                icon: '⚡',
+                name: 'Инерция Ума',
+                desc: 'Верный ответ в калькуляторе с 1-й попытки даёт +1⏳ к таймеру врага'
+            },
+            {
+                id: 'small_synth',
+                icon: '🔥',
+                name: 'Малый Синтез',
+                desc: 'Сложение с ответом от −5 до 5 происходит мгновенно без калькулятора'
+            },
+            {
+                id: 'sniper_div',
+                icon: '🎯',
+                name: 'Снайпер-Делитель',
+                desc: 'Деление нацело в финале срабатывает мгновенно без калькулятора'
+            },
+            {
+                id: 'magnet',
+                icon: '🧲',
+                name: 'Магнит-Сортировка',
+                desc: 'Активная кнопка (КД 2 боя): за 1 шаг переносит все X влево, а числа вправо'
+            },
+            {
+                id: 'scissors',
+                icon: '✂️',
+                name: 'Ножницы Чётности',
+                desc: 'Активная кнопка: делит все чётные слагаемые на 2 без траты хода'
+            },
+            {
+                id: 'vamp',
+                icon: '🧛',
+                name: 'Вампиризм',
+                desc: 'Победа над врагом до его первого удара лечит +2 ❤️'
+            },
+            {
+                id: 'shield',
+                icon: '🛡️',
+                name: 'Щит Отличника',
+                desc: 'В начале каждого 2-го боя даёт щит, блокирующий 1 удар или ошибку'
+            },
+            {
+                id: 'heart',
+                icon: '❤️',
+                name: 'Большое Сердце',
+                desc: 'Макс. здоровье +4 ❤️ и полное исцеление прямо сейчас'
+            }
+        ];
 
-        function setStatusMessage(icon, text, tone = 'normal') {
-            const banner = document.getElementById('status-banner');
-            document.getElementById('status-icon').innerText = icon;
-            document.getElementById('status-text').innerHTML = text;
+        const ENEMY_ROSTER = [
+            { icon: '👾', name: 'Клякса' },
+            { icon: '👺', name: 'Гоблин' },
+            { icon: '🕷️', name: 'Паук' },
+            { icon: '👹', name: 'Огр' },
+            { icon: '🤖', name: 'Голем' },
+            { icon: '🐉', name: 'Дракон' }
+        ];
 
-            if (tone === 'error') {
-                banner.className = 'mb-4 px-3 py-2 rounded-lg bg-[#fef2f2] border-2 border-[#ef4444] text-xs sm:text-sm text-[#991b1b] flex items-center justify-between gap-2 shake-anim';
-            } else if (tone === 'hint') {
-                banner.className = 'mb-4 px-3 py-2 rounded-lg bg-[#fefce8] border-2 border-[#eab308] text-xs sm:text-sm text-[#854d0e] flex items-center justify-between gap-2 line-pop';
-            } else if (tone === 'success') {
-                banner.className = 'mb-4 px-3 py-2 rounded-lg bg-[#f0fdf4] border-2 border-[#22c55e] text-xs sm:text-sm text-[#166534] flex items-center justify-between gap-2';
+        function hasPerk(id) {
+            return State.rogue.perks.includes(id);
+        }
+
+        function initRogueRun() {
+            State.rogue = {
+                initialized: true,
+                wave: 1,
+                level: 1,
+                xp: 0,
+                xpThresholds: [2, 3, 5, 7, 10, 14],
+                heroHp: 10,
+                heroMaxHp: 10,
+                shield: false,
+                enemy: null,
+                perks: [],
+                firstTransferUsedThisWave: false,
+                hadErrorThisWave: false,
+                enemyAttackedThisWave: false,
+                magnetCd: 0,
+                scissorsUsedThisWave: false
+            };
+            document.getElementById('rogue-gameover-modal').classList.add('hidden');
+            document.getElementById('rogue-perk-modal').classList.add('hidden');
+            setupRogueWave();
+            startNewEquation();
+        }
+
+        function setupRogueWave() {
+            const R = State.rogue;
+            const w = R.wave;
+            const rosterItem = ENEMY_ROSTER[(w - 1) % ENEMY_ROSTER.length];
+
+            // Баланс таймера и урона по волнам
+            let maxTimer = 4;
+            let dmg = 1;
+            if (w >= 4 && w <= 7) { maxTimer = 4; dmg = 2; }
+            else if (w >= 8 && w <= 14) { maxTimer = 3; dmg = 3; }
+            else if (w >= 15) { maxTimer = 3; dmg = 4; }
+
+            R.enemy = {
+                icon: rosterItem.icon,
+                name: rosterItem.name,
+                timer: maxTimer,
+                maxTimer: maxTimer,
+                dmg: dmg
+            };
+
+            R.firstTransferUsedThisWave = false;
+            R.hadErrorThisWave = false;
+            R.enemyAttackedThisWave = false;
+            R.scissorsUsedThisWave = false;
+            if (R.magnetCd > 0) R.magnetCd--;
+
+            if (hasPerk('shield') && w % 2 === 0) {
+                R.shield = true;
+            }
+
+            updateRogueHUD();
+        }
+
+        function isEquationAllEven() {
+            const all = [...State.left, ...State.right];
+            if (all.length === 0) return false;
+            return all.every(t => Number.isInteger(t.val) && Math.abs(t.val) % 2 === 0 && t.val !== 0);
+        }
+
+        function updateRogueHUD() {
+            if (State.mode !== 'rogue') return;
+            const R = State.rogue;
+
+            document.getElementById('rogue-lvl-num').innerText = R.level;
+            const needXp = R.xpThresholds[Math.min(R.level - 1, R.xpThresholds.length - 1)];
+            const pctXp = Math.min(100, Math.round((R.xp / needXp) * 100));
+            document.getElementById('rogue-xp-bar').style.width = `${pctXp}%`;
+
+            const perksContainer = document.getElementById('rogue-perks-list');
+            perksContainer.innerHTML = R.perks.map(pid => {
+                const p = ALL_PERKS.find(x => x.id === pid);
+                return p ? `<span class="text-xs sm:text-sm bg-slate-800 border border-slate-600 rounded px-1" title="${p.name}: ${p.desc}">${p.icon}</span>` : '';
+            }).join('');
+
+            document.getElementById('hero-hp-text').innerText = `${R.heroHp}/${R.heroMaxHp}`;
+            document.getElementById('hero-hp-bar').style.width = `${Math.max(0, (R.heroHp / R.heroMaxHp) * 100)}%`;
+            const shieldBadge = document.getElementById('hero-shield-badge');
+            if (R.shield) shieldBadge.classList.remove('hidden');
+            else shieldBadge.classList.add('hidden');
+
+            document.getElementById('rogue-wave-num').innerText = R.wave;
+
+            if (R.enemy) {
+                document.getElementById('enemy-avatar').innerText = R.enemy.icon;
+                document.getElementById('enemy-timer-text').innerText = R.enemy.timer;
+                document.getElementById('enemy-dmg-text').innerText = R.enemy.dmg;
+            }
+
+            // Активные кнопки перков
+            const magnetBtn = document.getElementById('skill-magnet-btn');
+            if (hasPerk('magnet')) {
+                magnetBtn.classList.remove('hidden');
+                if (R.magnetCd > 0) {
+                    magnetBtn.disabled = true;
+                    document.getElementById('skill-magnet-cd').innerText = `${R.magnetCd} б.`;
+                } else {
+                    magnetBtn.disabled = false;
+                    document.getElementById('skill-magnet-cd').innerText = 'Сорт';
+                }
             } else {
-                banner.className = 'mb-4 px-3 py-2 rounded-lg bg-[#f8fafc]/90 border-2 border-[#cbd5e1] text-xs sm:text-sm text-[#334155] flex items-center justify-between gap-2';
+                magnetBtn.classList.add('hidden');
+            }
+
+            const scissorsBtn = document.getElementById('skill-scissors-btn');
+            if (hasPerk('scissors')) {
+                scissorsBtn.classList.remove('hidden');
+                scissorsBtn.disabled = R.scissorsUsedThisWave || !isEquationAllEven();
+            } else {
+                scissorsBtn.classList.add('hidden');
             }
         }
 
-        function renderNotebookAll() {
-            renderHistorySteps();
-            renderActiveLine();
-            renderInlineActionPanel();
-            checkAutoSimplifiedState();
+        function spawnFloatingPopup(targetCardId, text, colorClass) {
+            const card = document.getElementById(targetCardId);
+            if (!card) return;
+            const pop = document.createElement('div');
+            pop.className = `dmg-popup ${colorClass}`;
+            pop.style.left = '35%';
+            pop.style.top = '-4px';
+            pop.innerText = text;
+            card.appendChild(pop);
+            setTimeout(() => pop.remove(), 850);
         }
 
-        function renderHistorySteps() {
-            const container = document.getElementById('notebook-history');
+        function damageHero(amount, label = '') {
+            const R = State.rogue;
+            if (R.shield) {
+                R.shield = false;
+                spawnFloatingPopup('rogue-hero-card', '🛡️ Блок!', 'text-sky-300');
+                updateRogueHUD();
+                return false;
+            }
+            R.heroHp = Math.max(0, R.heroHp - amount);
+            spawnFloatingPopup('rogue-hero-card', `-${amount} ❤️ ${label}`, 'text-rose-400');
+            updateRogueHUD();
+
+            if (R.heroHp <= 0) {
+                document.getElementById('rogue-final-waves').innerText = R.wave - 1;
+                setTimeout(() => {
+                    document.getElementById('rogue-gameover-modal').classList.remove('hidden');
+                }, 450);
+                return true;
+            }
+            return false;
+        }
+
+        function tickRogueStep(isTransfer = false) {
+            if (State.mode !== 'rogue' || !State.rogue.enemy) return;
+            const R = State.rogue;
+
+            // Перк "Сапоги Переноса": первый перенос в бою не тратит таймер
+            if (isTransfer && hasPerk('boots') && !R.firstTransferUsedThisWave) {
+                R.firstTransferUsedThisWave = true;
+                spawnFloatingPopup('rogue-hero-card', '👢 0⏳', 'text-amber-300');
+                updateRogueHUD();
+                return;
+            }
+
+            R.enemy.timer--;
+            if (R.enemy.timer <= 0) {
+                R.enemyAttackedThisWave = true;
+                SoundEngine.boing();
+                damageHero(R.enemy.dmg);
+                R.enemy.timer = R.enemy.maxTimer;
+            }
+            updateRogueHUD();
+        }
+
+        // Активный навык 1: Магнитная Сортировка
+        function useMagnetSortSkill() {
+            if (State.mode !== 'rogue' || State.solved || State.activeOp) return;
+            const R = State.rogue;
+            if (!hasPerk('magnet') || R.magnetCd > 0) return;
+
+            saveUndoSnapshot();
+            const newLeft = [];
+            const newRight = [];
+
+            State.left.forEach(t => {
+                if (t.val === 0 && !t.isX) return;
+                if (t.isX) newLeft.push(createTerm(t.val, true));
+                else newRight.push(createTerm(-t.val, false));
+            });
+            State.right.forEach(t => {
+                if (t.val === 0 && !t.isX) return;
+                if (t.isX) newLeft.push(createTerm(-t.val, true));
+                else newRight.push(createTerm(t.val, false));
+            });
+
+            if (newLeft.length === 0) newLeft.push(createTerm(0, false));
+            if (newRight.length === 0) newRight.push(createTerm(0, false));
+
+            State.left = newLeft;
+            State.right = newRight;
+            R.magnetCd = 3; // Перезарядка 2 следующих боя
+            SoundEngine.portalSnap();
+            tickRogueStep(false);
+            renderAll();
+        }
+
+        // Активный навык 2: Ножницы Чётности
+        function useParityScissorsSkill() {
+            if (State.mode !== 'rogue' || State.solved || State.activeOp) return;
+            const R = State.rogue;
+            if (!hasPerk('scissors') || R.scissorsUsedThisWave || !isEquationAllEven()) return;
+
+            saveUndoSnapshot();
+            State.left = State.left.map(t => createTerm(t.val / 2, t.isX));
+            State.right = State.right.map(t => createTerm(t.val / 2, t.isX));
+            R.scissorsUsedThisWave = true;
+            SoundEngine.success();
+            spawnFloatingPopup('rogue-hero-card', '✂️ :2', 'text-amber-300');
+            updateRogueHUD();
+            renderAll();
+        }
+
+        function handleRogueWaveVictory() {
+            const R = State.rogue;
+            spawnFloatingPopup('rogue-enemy-card', '💥 Повержен!', 'text-amber-300');
+
+            if (hasPerk('vamp') && !R.enemyAttackedThisWave) {
+                R.heroHp = Math.min(R.heroMaxHp, R.heroHp + 2);
+                spawnFloatingPopup('rogue-hero-card', '🧛 +2 ❤️', 'text-emerald-400');
+            }
+
+            // Начисление опыта: +1 за победу, и ещё +1 за чистую победу без ошибок и ударов
+            const gainedXp = (!R.hadErrorThisWave && !R.enemyAttackedThisWave) ? 2 : 1;
+            R.xp += gainedXp;
+            R.wave++;
+
+            const needXp = R.xpThresholds[Math.min(R.level - 1, R.xpThresholds.length - 1)];
+            if (R.xp >= needXp && R.perks.length < ALL_PERKS.length) {
+                R.xp -= needXp;
+                R.level++;
+                updateRogueHUD();
+                setTimeout(() => openPerkSelectionModal(), 480);
+            } else {
+                setTimeout(() => {
+                    setupRogueWave();
+                    startNewEquation();
+                }, 650);
+            }
+        }
+
+        function openPerkSelectionModal() {
+            const R = State.rogue;
+            const available = ALL_PERKS.filter(p => !R.perks.includes(p.id));
+            if (available.length === 0) {
+                setupRogueWave();
+                startNewEquation();
+                return;
+            }
+
+            const shuffled = [...available].sort(() => Math.random() - 0.5).slice(0, 3);
+            const container = document.getElementById('rogue-perk-choices');
             container.innerHTML = '';
 
-            Notebook.historyLines.forEach((item, index) => {
-                const row = document.createElement('div');
-                row.className = 'flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-white/60 border-l-4 border-[#93c5fd]';
-                row.innerHTML = `
-                    <div class="math-font text-base sm:text-lg font-bold text-[#334155] tracking-wide">
-                        ${item.eq}
-                    </div>
-                    <div class="text-xs italic text-[#64748b] flex items-center gap-1">
-                        <span>✓</span> <span>${item.comment}</span>
+            shuffled.forEach(perk => {
+                const btn = document.createElement('button');
+                btn.className = 'pixel-btn w-full bg-slate-800 hover:bg-slate-700 text-left p-3 rounded-xl flex items-center gap-3';
+                btn.innerHTML = `
+                    <div class="w-11 h-11 rounded-lg bg-slate-900 border-2 border-amber-400 flex items-center justify-center text-2xl shrink-0">${perk.icon}</div>
+                    <div>
+                        <div class="font-black text-amber-300 text-sm sm:text-base">${perk.name}</div>
+                        <div class="text-xs text-slate-300 font-bold leading-snug">${perk.desc}</div>
                     </div>
                 `;
-                container.appendChild(row);
-            });
-        }
-
-        function renderActiveLine() {
-            const leftZone = document.getElementById('left-zone');
-            const rightZone = document.getElementById('right-zone');
-            leftZone.innerHTML = '';
-            rightZone.innerHTML = '';
-
-            // Подсветка противоположной стороны, если слагаемое выбрано кликом
-            leftZone.classList.toggle('clickable-side-hint', Notebook.selectedTermId && Notebook.selectedSide === 'right');
-            rightZone.classList.toggle('clickable-side-hint', Notebook.selectedTermId && Notebook.selectedSide === 'left');
-
-            const buildTermTile = (term, index, sideName) => {
-                // Если это слагаемое только что перенесли через "=" и нужно выбрать ему знак прямо в строке!
-                if (Notebook.pendingSign && Notebook.pendingSign.termId === term.id) {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'term-pending-sign rounded-xl px-3 py-1.5 flex items-center gap-2 line-pop';
-                    const absVal = Math.abs(term.coeff);
-                    const bodyText = term.isVar ? (absVal === 1 ? 'x' : `${absVal}x`) : `${absVal}`;
-
-                    wrapper.innerHTML = `
-                        <span class="text-[11px] font-bold text-[#92400e] hidden sm:inline">Знак:</span>
-                        <button onclick="resolvePendingSign('+', event)" class="pixel-btn px-2.5 py-1 rounded bg-[#4ade80] hover:bg-[#22c55e] text-[#064e3b] math-font font-black text-base" title="Плюс (+)">+</button>
-                        <button onclick="resolvePendingSign('-', event)" class="pixel-btn px-2.5 py-1 rounded bg-[#f87171] hover:bg-[#ef4444] text-white math-font font-black text-base" title="Минус (-)">−</button>
-                        <span class="math-font font-black text-lg sm:text-xl text-[#1e293b] px-1">${bodyText}</span>
-                        <button onclick="cancelPendingSign(event)" class="text-xs text-[#78350f] hover:text-black font-bold ml-1" title="Вернуть обратно">✕</button>
-                    `;
-                    return wrapper;
-                }
-
-                const el = document.createElement('div');
-                el.id = term.id;
-                const isSelected = Notebook.selectedTermId === term.id;
-                const isMerging = Notebook.pendingMerge && (Notebook.pendingMerge.id1 === term.id || Notebook.pendingMerge.id2 === term.id);
-
-                let styleClass = term.isVar ? 'term-x' : 'term-num';
-                if (isSelected) styleClass += ' term-selected';
-                if (isMerging) styleClass += ' term-merging';
-
-                el.className = `term-tile ${styleClass} rounded-xl px-3.5 py-2 math-font font-extrabold text-lg sm:text-xl flex items-center gap-1`;
-                el.draggable = !Notebook.pendingSign && !Notebook.pendingMerge && !Notebook.pendingDivision;
-                el.innerText = term.formatForLine(index === 0);
-
-                // Drag события
-                el.addEventListener('dragstart', (e) => {
-                    if (Notebook.pendingSign || Notebook.pendingMerge) {
-                        e.preventDefault();
-                        return;
-                    }
-                    SoundFX.pickup();
-                    draggedId = term.id;
-                    draggedFromSide = sideName;
-                    e.dataTransfer.setData('text/plain', term.id);
-                });
-
-                // Сброс одного слагаемого прямо на другое слагаемое (для сложения подобных или переноса)
-                el.addEventListener('dragover', (e) => e.preventDefault());
-                el.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    document.getElementById('left-zone').classList.remove('drop-target-active');
-                    document.getElementById('right-zone').classList.remove('drop-target-active');
-
-                    if (!draggedId || draggedId === term.id) return;
-
-                    if (draggedFromSide === sideName) {
-                        // На одной стороне -> складываем подобные!
-                        tryStartMerge(draggedId, term.id, sideName);
+                btn.onclick = () => {
+                    if (perk.id === 'heart') {
+                        R.heroMaxHp += 4;
+                        R.heroHp = R.heroMaxHp;
                     } else {
-                        // С другой стороны -> переносим через "="
-                        tryTransposeTerm(draggedId, draggedFromSide, sideName);
+                        R.perks.push(perk.id);
                     }
-                    draggedId = null;
-                });
-
-                // Клик мышкой / пальцем
-                el.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    handleTermTileClick(term.id, sideName);
-                });
-
-                return el;
-            };
-
-            Notebook.left.forEach((t, i) => leftZone.appendChild(buildTermTile(t, i, 'left')));
-            Notebook.right.forEach((t, i) => rightZone.appendChild(buildTermTile(t, i, 'right')));
-        }
-
-        /* =========================================================================
-           7. ЛОГИКА ПЕРЕТАСКИВАНИЯ И КЛИКОВ (БЕЗ ПУСТЫХ ЧАСТЕЙ И ЛОЖНЫХ НУЛЕЙ!)
-        ========================================================================= */
-        function handleTermTileClick(termId, sideName) {
-            if (Notebook.pendingSign || Notebook.pendingMerge || Notebook.isSolved) return;
-            SoundFX.pickup();
-
-            // Если ничего не выбрано -> выбираем
-            if (!Notebook.selectedTermId) {
-                Notebook.selectedTermId = termId;
-                Notebook.selectedSide = sideName;
-                const arr = sideName === 'left' ? Notebook.left : Notebook.right;
-                const t = arr.find(item => item.id === termId);
-                setStatusMessage('👆', `Выбрано слагаемое <b>${t.formatSigned()}</b>: нажми на подобное слагаемое рядом, чтобы сложить их, или на противоположную часть через «=» для переноса.`, 'normal');
-                renderActiveLine();
-                return;
-            }
-
-            // Повторный клик по тому же слагаемому снимает выделение
-            if (Notebook.selectedTermId === termId) {
-                Notebook.selectedTermId = null;
-                Notebook.selectedSide = null;
-                setStatusMessage('✍️', 'Выделение снято. Перетащи или выбери слагаемое.', 'normal');
-                renderActiveLine();
-                return;
-            }
-
-            // Клик по другому слагаемому на ТОЙ ЖЕ стороне -> пробуем сложить подобные
-            if (Notebook.selectedSide === sideName) {
-                const firstId = Notebook.selectedTermId;
-                Notebook.selectedTermId = null;
-                Notebook.selectedSide = null;
-                tryStartMerge(firstId, termId, sideName);
-                return;
-            }
-
-            // Клик по слагаемому на ПРОТИВОПОЛОЖНОЙ стороне -> переносим выбранное слагаемое через "="
-            const movingId = Notebook.selectedTermId;
-            const fromSide = Notebook.selectedSide;
-            Notebook.selectedTermId = null;
-            Notebook.selectedSide = null;
-            tryTransposeTerm(movingId, fromSide, sideName);
-        }
-
-        function handleSideZoneClick(targetSide, event) {
-            if (!Notebook.selectedTermId || Notebook.pendingSign || Notebook.pendingMerge) return;
-            if (Notebook.selectedSide !== targetSide) {
-                const movingId = Notebook.selectedTermId;
-                const fromSide = Notebook.selectedSide;
-                Notebook.selectedTermId = null;
-                Notebook.selectedSide = null;
-                tryTransposeTerm(movingId, fromSide, targetSide);
-            }
-        }
-
-        // Настройка Drag & Drop на пустые области левой и правой стороны уравнения
-        function setupZoneDragAndDrop() {
-            ['left', 'right'].forEach(sideName => {
-                const zone = document.getElementById(`${sideName}-zone`);
-                zone.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    if (draggedFromSide && draggedFromSide !== sideName) {
-                        zone.classList.add('drop-target-active');
-                    }
-                });
-                zone.addEventListener('dragleave', () => {
-                    zone.classList.remove('drop-target-active');
-                });
-                zone.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    zone.classList.remove('drop-target-active');
-                    if (!draggedId) return;
-                    if (draggedFromSide !== sideName) {
-                        tryTransposeTerm(draggedId, draggedFromSide, sideName);
-                    }
-                    draggedId = null;
-                });
+                    document.getElementById('rogue-perk-modal').classList.add('hidden');
+                    SoundEngine.success();
+                    setupRogueWave();
+                    startNewEquation();
+                };
+                container.appendChild(btn);
             });
+
+            document.getElementById('rogue-perk-modal').classList.remove('hidden');
         }
 
-        /* =========================================================================
-           8. ПЕРЕНОС СЛАГАЕМОГО ЧЕРЕЗ «=» ПРЯМО В СТРОКЕ
-        ========================================================================= */
-        function tryTransposeTerm(termId, fromSide, toSide) {
-            const sourceArr = fromSide === 'left' ? Notebook.left : Notebook.right;
-            const targetArr = toSide === 'left' ? Notebook.left : Notebook.right;
+        function buildRogueEquation() {
+            const w = State.rogue.wave;
+            if (w <= 3) {
+                return buildEquationByMode('lvl1');
+            } else if (w <= 7) {
+                return buildEquationByMode('lvl2');
+            } else if (w <= 12) {
+                return Math.random() < 0.65 ? buildEquationByMode('hard') : buildEquationByMode('lvl2');
+            } else {
+                return Math.random() < 0.4 ? buildEquationByMode('dec') : buildEquationByMode('hard');
+            }
+        }
 
-            // ЗАЩИТА ОТ ОПУСТОШЕНИЯ СТОРОНЫ (чтобы не появлялся искусственный 0!)
-            if (sourceArr.length <= 1) {
-                SoundFX.error();
-                setStatusMessage(
-                    '🛑',
-                    'Не уноси последнее слагаемое с этой стороны, иначе часть уравнения опустеет! Переноси слагаемые с другой стороны.',
-                    'error'
-                );
-                renderActiveLine();
-                return;
+        function buildEquationByMode(mode) {
+            if (mode === 'rogue') {
+                return buildRogueEquation();
+            }
+            if (mode === 'lvl1') {
+                // Простые: ax + b = c
+                const x = randNonZero(-9, 9);
+                const a = randNonZero(2, 6) * (Math.random() < 0.25 ? -1 : 1);
+                const b = randNonZero(-15, 15);
+                const c = a * x + b;
+                if (Math.random() < 0.5) {
+                    return { left: [createTerm(a, true), createTerm(b, false)], right: [createTerm(c, false)] };
+                } else {
+                    return { left: [createTerm(c, false)], right: [createTerm(a, true), createTerm(b, false)] };
+                }
             }
 
-            const idx = sourceArr.findIndex(t => t.id === termId);
-            if (idx === -1) return;
+            if (mode === 'dec') {
+                // Десятичные дроби: корень с половинкой или дробные коэффициенты
+                const roots = [-4.5, -3.5, -2.5, -1.5, -0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 1.2, 2.4];
+                const x = roots[Math.floor(Math.random() * roots.length)];
+                const a = randInt(2, 5);
+                const c = randInt(1, 3) * (Math.random() < 0.5 ? 1 : -1);
+                const netA = a - c === 0 ? 2 : a - c;
+                const b = randNonZero(-8, 8);
+                const d = Number(((a - c) * x + b).toFixed(2));
+                return {
+                    left: [createTerm(a, true), createTerm(b, false)],
+                    right: [createTerm(c, true), createTerm(d, false)]
+                };
+            }
 
-            const term = sourceArr[idx];
-            const snapshotBeforeMove = Notebook.formatFullEquation();
+            if (mode === 'hard') {
+                // Сложные: по 3 слагаемых, нужно и приводить подобные, и переносить
+                const x = randNonZero(-7, 7);
+                const a1 = randNonZero(-4, 5);
+                const a2 = randNonZero(-3, 4);
+                const b1 = randNonZero(-12, 12);
+                const c1 = randNonZero(-4, 4);
+                // Гарантируем, что иксы не сократятся в 0
+                const safeC1 = (a1 + a2 === c1) ? c1 + 2 : c1;
+                const b2 = randNonZero(-10, 10);
+                const d = (a1 + a2) * x + b1 - safeC1 * x - b2;
+                return {
+                    left: [createTerm(a1, true), createTerm(b1, false), createTerm(a2, true)],
+                    right: [createTerm(safeC1, true), createTerm(b2, false), createTerm(d, false)].filter(t => t.val !== 0)
+                };
+            }
 
-            // Перемещаем слагаемое на целевую сторону и включаем встроенный выбор знака прямо на нём
-            sourceArr.splice(idx, 1);
-            targetArr.push(term);
-
-            Notebook.pendingSign = {
-                termId: term.id,
-                fromSide,
-                toSide,
-                originalCoeff: term.coeff,
-                eqBefore: snapshotBeforeMove
+            // По умолчанию 'lvl2': иксы с двух сторон ax + b = cx + d
+            const x = randNonZero(-8, 8);
+            const a = randNonZero(-5, 6);
+            let c = randNonZero(-4, 5);
+            if (a === c) c += (c >= 0 ? 1 : -1);
+            const b = randNonZero(-14, 14);
+            const d = (a - c) * x + b;
+            return {
+                left: [createTerm(a, true), createTerm(b, false)],
+                right: [createTerm(c, true), createTerm(d, false)]
             };
-
-            SoundFX.drop();
-            setStatusMessage(
-                '⚡',
-                `Слагаемое <b>${term.formatSigned()}</b> перепрыгнуло через <b>«=»</b>! Выбери его новый знак прямо в строке (<b>+</b> или <b>−</b>):`,
-                'hint'
-            );
-            renderNotebookAll();
         }
 
-        function resolvePendingSign(chosenSign, event) {
-            if (event) event.stopPropagation();
-            if (!Notebook.pendingSign) return;
-
-            const info = Notebook.pendingSign;
-            const targetArr = info.toSide === 'left' ? Notebook.left : Notebook.right;
-            const term = targetArr.find(t => t.id === info.termId);
-            if (!term) return;
-
-            const wasPositive = info.originalCoeff > 0;
-            const isCorrect = (chosenSign === '+' && !wasPositive) || (chosenSign === '-' && wasPositive);
-
-            if (isCorrect) {
-                // Сохраняем состояние ДО переноса в стек отмены и в историю тетради
-                const oldSignFormatted = term.formatSigned();
-                term.coeff = -info.originalCoeff;
-                const newSignFormatted = term.formatSigned();
-
-                // Для корректного Undo сохраняем снимок до переноса
-                const restoredLeft = (info.fromSide === 'left')
-                    ? [...Notebook.left, new Term(info.originalCoeff, term.isVar, term.id)]
-                    : Notebook.left.filter(t => t.id !== term.id).map(t => t.clone());
-                const restoredRight = (info.fromSide === 'right')
-                    ? [...Notebook.right, new Term(info.originalCoeff, term.isVar, term.id)]
-                    : Notebook.right.filter(t => t.id !== term.id).map(t => t.clone());
-
-                Notebook.undoStack.push({
-                    left: restoredLeft,
-                    right: restoredRight,
-                    historyLines: [...Notebook.historyLines]
-                });
-                document.getElementById('undo-btn').disabled = false;
-
-                // Если на целевой стороне был 0, убираем его
-                if (targetArr.length > 1) {
-                    const zeroIdx = targetArr.findIndex(t => !t.isVar && t.coeff === 0);
-                    if (zeroIdx !== -1) targetArr.splice(zeroIdx, 1);
-                }
-
-                Notebook.pushHistoryLine(info.eqBefore, `перенесли ${oldSignFormatted} через «=» как ${newSignFormatted}`);
-                Notebook.pendingSign = null;
-
-                SoundFX.success();
-                Player.addXP(5);
-                setStatusMessage('✅', `Верно! При переходе через «=» слагаемое <b>${oldSignFormatted}</b> стало <b>${newSignFormatted}</b>.`, 'success');
-                renderNotebookAll();
-            } else {
-                Player.signErrors++;
-                Player.streak = 0;
-                Player.updateHeader();
-                SoundFX.error();
-                setStatusMessage(
-                    '⚠️',
-                    `Ой! Было <b>${term.formatSigned()}</b>. При переносе через знак «=» знак обязательно меняется на противоположный!`,
-                    'error'
-                );
-            }
-        }
-
-        function cancelPendingSign(event) {
-            if (event) event.stopPropagation();
-            if (!Notebook.pendingSign) return;
-            const info = Notebook.pendingSign;
-            const targetArr = info.toSide === 'left' ? Notebook.left : Notebook.right;
-            const sourceArr = info.fromSide === 'left' ? Notebook.left : Notebook.right;
-
-            const idx = targetArr.findIndex(t => t.id === info.termId);
-            if (idx !== -1) {
-                const [term] = targetArr.splice(idx, 1);
-                term.coeff = info.originalCoeff;
-                sourceArr.push(term);
-            }
-            Notebook.pendingSign = null;
-            setStatusMessage('✍️', 'Перенос отменён.', 'normal');
-            renderNotebookAll();
-        }
-
-        /* =========================================================================
-           9. СЛОЖЕНИЕ ПОДОБНЫХ СЛАГАЕМЫХ ПРЯМО В СТРОКЕ
-        ========================================================================= */
-        function tryStartMerge(id1, id2, side) {
-            const arr = side === 'left' ? Notebook.left : Notebook.right;
-            const t1 = arr.find(t => t.id === id1);
-            const t2 = arr.find(t => t.id === id2);
-            if (!t1 || !t2) return;
-
-            // Проверка: нельзя складывать иксы с числами!
-            if (t1.isVar !== t2.isVar) {
-                SoundFX.error();
-                setStatusMessage(
-                    '🚫',
-                    `Нельзя складывать <b>${t1.formatSigned()}</b> и <b>${t2.formatSigned()}</b>! Иксы складываются только с иксами, а числа — только с числами.`,
-                    'error'
-                );
-                renderActiveLine();
-                return;
-            }
-
-            Notebook.pendingMerge = { side, id1, id2 };
-            SoundFX.pickup();
-            setStatusMessage(
-                '🧮',
-                `Посчитай сумму подобных слагаемых <b>${t1.formatForLine(true)} ${t2.formatForLine(false)}</b> в окошке прямо под строкой:`,
-                'hint'
-            );
-            renderNotebookAll();
-        }
-
-        function renderInlineActionPanel() {
-            const panel = document.getElementById('inline-action-panel');
-            const mergeBox = document.getElementById('inline-merge-box');
-            const divideBox = document.getElementById('inline-divide-box');
-
-            if (Notebook.pendingMerge) {
-                panel.classList.remove('hidden');
-                mergeBox.classList.remove('hidden');
-                divideBox.classList.add('hidden');
-
-                const arr = Notebook.pendingMerge.side === 'left' ? Notebook.left : Notebook.right;
-                const t1 = arr.find(t => t.id === Notebook.pendingMerge.id1);
-                const t2 = arr.find(t => t.id === Notebook.pendingMerge.id2);
-
-                if (t1 && t2) {
-                    document.getElementById('merge-expr-label').innerText = `${t1.formatForLine(true)} ${t2.formatForLine(false)} =`;
-                    const suffix = document.getElementById('merge-x-suffix');
-                    if (t1.isVar) suffix.classList.remove('hidden');
-                    else suffix.classList.add('hidden');
-
-                    const input = document.getElementById('inline-merge-input');
-                    input.value = '';
-                    setTimeout(() => input.focus(), 30);
-                }
-                return;
-            }
-
-            if (Notebook.pendingDivision && !Notebook.isSolved) {
-                panel.classList.remove('hidden');
-                mergeBox.classList.add('hidden');
-                divideBox.classList.remove('hidden');
-
-                const left = Notebook.left[0];
-                const right = Notebook.right[0];
-                const varTerm = left.isVar ? left : right;
-                const numTerm = left.isVar ? right : left;
-
-                document.getElementById('divide-explanation').innerHTML =
-                    `Осталось разделить число <b>${numTerm.coeff}</b> на коэффициент <b>${varTerm.coeff}</b> перед иксом:`;
-                const divisorStr = varTerm.coeff < 0 ? `(${varTerm.coeff})` : `${varTerm.coeff}`;
-                document.getElementById('divide-formula-label').innerText = `x = ${numTerm.coeff} : ${divisorStr} =`;
-
-                const input = document.getElementById('inline-divide-input');
-                input.value = '';
-                setTimeout(() => input.focus(), 30);
-                return;
-            }
-
-            panel.classList.add('hidden');
-            mergeBox.classList.add('hidden');
-            divideBox.classList.add('hidden');
-        }
-
-        function confirmInlineMerge() {
-            if (!Notebook.pendingMerge) return;
-            const input = document.getElementById('inline-merge-input');
-            const val = parseInt(input.value, 10);
-            if (isNaN(val)) {
-                SoundFX.error();
-                input.focus();
-                return;
-            }
-
-            const arr = Notebook.pendingMerge.side === 'left' ? Notebook.left : Notebook.right;
-            const i1 = arr.findIndex(t => t.id === Notebook.pendingMerge.id1);
-            const i2 = arr.findIndex(t => t.id === Notebook.pendingMerge.id2);
-            if (i1 === -1 || i2 === -1) return;
-
-            const t1 = arr[i1];
-            const t2 = arr[i2];
-            const expected = t1.coeff + t2.coeff;
-
-            if (val === expected) {
-                Notebook.saveStateForUndo();
-                const eqBefore = Notebook.formatFullEquation();
-                const mergedDesc = `${t1.formatForLine(true)} ${t2.formatForLine(false)} = ${expected}${t1.isVar ? 'x' : ''}`;
-
-                t1.coeff = expected;
-                arr.splice(i2, 1);
-
-                // Если в результате сложения получился 0 (например, 5 - 5 = 0)
-                if (t1.coeff === 0) {
-                    const idxNow = arr.findIndex(t => t.id === t1.id);
-                    if (idxNow !== -1) arr.splice(idxNow, 1);
-                    if (arr.length === 0) {
-                        arr.push(new Term(0, false));
-                    }
-                }
-
-                Notebook.pushHistoryLine(eqBefore, `привели подобные (${mergedDesc})`);
-                Notebook.pendingMerge = null;
-
-                SoundFX.success();
-                Player.addXP(5);
-                setStatusMessage('✅', `Отлично! Сложили подобные слагаемые: <b>${mergedDesc}</b>.`, 'success');
-                renderNotebookAll();
-            } else {
-                Player.mathErrors++;
-                Player.streak = 0;
-                Player.updateHeader();
-                SoundFX.error();
-                setStatusMessage('🧮', `Ошибка в счёте! Посчитай внимательнее: <b>${t1.coeff} + (${t2.coeff})</b>`, 'error');
-                input.value = '';
-                input.focus();
-            }
-        }
-
-        function cancelInlineAction() {
-            Notebook.pendingMerge = null;
-            renderNotebookAll();
-        }
-
-        /* =========================================================================
-           10. ПРОВЕРКА УПРОЩЕНИЯ ДО ВИДА a·x = b И ФИНАЛЬНЫЙ ОТВЕТ
-        ========================================================================= */
-        function checkAutoSimplifiedState() {
-            if (Notebook.pendingSign || Notebook.pendingMerge || Notebook.isSolved) return;
-
-            if (Notebook.left.length === 1 && Notebook.right.length === 1) {
-                const l = Notebook.left[0];
-                const r = Notebook.right[0];
-                const hasOneVarAndOneNum = (l.isVar && !r.isVar) || (!l.isVar && r.isVar);
-
-                if (hasOneVarAndOneNum) {
-                    const varTerm = l.isVar ? l : r;
-                    const numTerm = l.isVar ? r : l;
-
-                    // Если коэффициент перед x уже равен 1 (например, x = 7 или 7 = x) -> уравнение сразу решено!
-                    if (varTerm.coeff === 1) {
-                        completeEquationVictory(numTerm.coeff);
-                        return;
-                    }
-
-                    // Иначе открываем встроенную строку деления прямо под уравнением
-                    Notebook.pendingDivision = true;
-                    renderInlineActionPanel();
-                    return;
-                }
-            }
-            Notebook.pendingDivision = false;
-            renderInlineActionPanel();
-        }
-
-        function confirmInlineDivision() {
-            const input = document.getElementById('inline-divide-input');
-            const val = parseInt(input.value, 10);
-            if (isNaN(val)) {
-                SoundFX.error();
-                input.focus();
-                return;
-            }
-
-            if (val === Notebook.root) {
-                const eqBefore = Notebook.formatFullEquation();
-                const l = Notebook.left[0];
-                const r = Notebook.right[0];
-                const varTerm = l.isVar ? l : r;
-                Notebook.pushHistoryLine(eqBefore, `разделили обе части на ${varTerm.coeff}`);
-
-                Notebook.left = [new Term(1, true)];
-                Notebook.right = [new Term(Notebook.root, false)];
-                Notebook.pendingDivision = false;
-                completeEquationVictory(Notebook.root);
-            } else {
-                Player.mathErrors++;
-                Player.streak = 0;
-                Player.updateHeader();
-                SoundFX.error();
-                setStatusMessage('⚠️', 'Неверное деление! Проверь знак и таблицу умножения.', 'error');
-                input.value = '';
-                input.focus();
-            }
-        }
-
-        function completeEquationVictory(rootVal) {
-            Notebook.isSolved = true;
-            Notebook.pendingDivision = false;
-            renderHistorySteps();
-            renderActiveLine();
-            renderInlineActionPanel();
-
-            Player.solved++;
-            Player.streak++;
-            const bonusXP = 20 + Math.min(30, Player.streak * 5);
-            Player.addXP(bonusXP);
-
-            document.getElementById('victory-answer-text').innerText = `Ответ: x = ${rootVal} — Решено верно!`;
-            document.getElementById('victory-xp-gain').innerText = `+${bonusXP} XP`;
-            document.getElementById('victory-notebook-stamp').classList.remove('hidden');
-
-            setStatusMessage('🎉', `Молодец! Уравнение решено: <b>x = ${rootVal}</b>.`, 'success');
-            SoundFX.fanfare();
-            launchPixelConfetti();
-        }
-
-        /* =========================================================================
-           11. ЭКРАННАЯ КЛАВИАТУРА, ПОДСКАЗКА, ОТМЕНА И СВОЙ ПРИМЕР
-        ========================================================================= */
-        function getActiveInput() {
-            if (Notebook.pendingMerge) return document.getElementById('inline-merge-input');
-            if (Notebook.pendingDivision) return document.getElementById('inline-divide-input');
-            return null;
-        }
-
-        function numpadPress(char) {
-            const inp = getActiveInput();
-            if (!inp) return;
-            SoundFX.pickup();
-            if (char === '-') {
-                if (inp.value.startsWith('-')) inp.value = inp.value.substring(1);
-                else inp.value = '-' + inp.value;
-            } else {
-                inp.value += char;
-            }
-            inp.focus();
-        }
-
-        function numpadBackspace() {
-            const inp = getActiveInput();
-            if (!inp) return;
-            SoundFX.pickup();
-            inp.value = inp.value.slice(0, -1);
-            inp.focus();
+        function saveUndoSnapshot() {
+            State.history.push({
+                left: cloneSide(State.left),
+                right: cloneSide(State.right)
+            });
+            document.getElementById('undo-btn').disabled = false;
         }
 
         function undoStep() {
-            if (Notebook.pendingSign) {
-                cancelPendingSign();
+            if (State.history.length === 0) return;
+            if (State.activeOp) {
+                cancelActiveOperation();
                 return;
             }
-            if (Notebook.pendingMerge) {
-                cancelInlineAction();
-                return;
+            const prev = State.history.pop();
+            State.left = prev.left;
+            State.right = prev.right;
+            State.solved = false;
+            document.getElementById('win-banner').classList.add('hidden');
+            if (State.history.length === 0) {
+                document.getElementById('undo-btn').disabled = true;
             }
-            if (Notebook.undoStack.length === 0) return;
-
-            const prev = Notebook.undoStack.pop();
-            Notebook.left = prev.left;
-            Notebook.right = prev.right;
-            Notebook.historyLines = prev.historyLines;
-            Notebook.isSolved = false;
-            Notebook.pendingDivision = false;
-            document.getElementById('victory-notebook-stamp').classList.add('hidden');
-            document.getElementById('undo-btn').disabled = Notebook.undoStack.length === 0;
-
-            SoundFX.pickup();
-            setStatusMessage('↩', 'Вернулись на шаг назад.', 'normal');
-            renderNotebookAll();
+            renderAll();
         }
 
-        function giveHint() {
-            SoundFX.pickup();
-            if (Notebook.pendingSign) {
-                const orig = Notebook.pendingSign.originalCoeff;
-                setStatusMessage('💡', `Подсказка: у слагаемого был знак <b>${orig > 0 ? '+' : '−'}</b>, значит после переноса через «=» выбери <b>${orig > 0 ? '−' : '+'}</b>!`, 'hint');
-                return;
-            }
-
-            const lVars = Notebook.left.filter(t => t.isVar);
-            const rVars = Notebook.right.filter(t => t.isVar);
-            const lNums = Notebook.left.filter(t => !t.isVar);
-            const rNums = Notebook.right.filter(t => !t.isVar);
-
-            if (lVars.length > 1) {
-                setStatusMessage('💡', `Слева есть подобные слагаемые с иксом (<b>${lVars[0].formatSigned()}</b> и <b>${lVars[1].formatSigned()}</b>). Нажми на них по очереди или перетащи друг на друга!`, 'hint');
-            } else if (rVars.length > 1) {
-                setStatusMessage('💡', `Справа есть подобные слагаемые с иксом (<b>${rVars[0].formatSigned()}</b> и <b>${rVars[1].formatSigned()}</b>). Сложи их!`, 'hint');
-            } else if (lNums.length > 1) {
-                setStatusMessage('💡', `Слева есть два обычных числа (<b>${lNums[0].formatSigned()}</b> и <b>${lNums[1].formatSigned()}</b>). Наложи одно на другое, чтобы посчитать!`, 'hint');
-            } else if (rNums.length > 1) {
-                setStatusMessage('💡', `Справа есть два числа (<b>${rNums[0].formatSigned()}</b> и <b>${rNums[1].formatSigned()}</b>). Объедини их!`, 'hint');
-            } else if (lVars.length > 0 && rVars.length > 0) {
-                setStatusMessage('💡', `Иксы стоят по разные стороны от «=». Перетащи <b>${rVars[0].formatSigned()}</b> с правой части в левую!`, 'hint');
-            } else if (lVars.length === 1 && lNums.length > 0) {
-                setStatusMessage('💡', `Чтобы икс остался один слева, перетащи число <b>${lNums[0].formatSigned()}</b> направо через знак «=»!`, 'hint');
-            } else if (rVars.length === 1 && rNums.length > 0) {
-                setStatusMessage('💡', `Чтобы икс остался один справа, перетащи число <b>${rNums[0].formatSigned()}</b> налево через знак «=»!`, 'hint');
-            } else if (Notebook.pendingDivision) {
-                setStatusMessage('💡', `Раздели свободное число на коэффициент перед X и впиши ответ в жёлтое окошко.`, 'hint');
-            }
-        }
-
-        // Ввод собственного примера прямо в шапке тетради
-        function toggleCustomBar() {
-            const bar = document.getElementById('custom-input-bar');
-            bar.classList.toggle('hidden');
-            if (!bar.classList.contains('hidden')) {
-                document.getElementById('custom-eq-field').focus();
-            }
-        }
-
-        function parseSideString(str) {
-            const cleaned = str.replace(/\s+/g, '').replace(/−/g, '-');
-            if (!cleaned) return null;
-            const tokens = cleaned.match(/[+-]?[^+-]+/g) || [];
-            const list = [];
-            for (const tok of tokens) {
-                if (tok.toLowerCase().includes('x')) {
-                    const cStr = tok.toLowerCase().replace('x', '');
-                    let c = 1;
-                    if (cStr === '' || cStr === '+') c = 1;
-                    else if (cStr === '-') c = -1;
-                    else c = parseInt(cStr, 10);
-                    if (isNaN(c)) return null;
-                    list.push(new Term(c, true));
-                } else {
-                    const n = parseInt(tok, 10);
-                    if (isNaN(n)) return null;
-                    list.push(new Term(n, false));
-                }
-            }
-            return list;
-        }
-
-        function applyCustomEquation() {
-            const raw = document.getElementById('custom-eq-field').value.trim();
-            const parts = raw.split('=');
-            if (parts.length !== 2) {
-                setStatusMessage('⚠️', 'В уравнении должен быть ровно один знак «=» (например: 3x - 5 = x + 7).', 'error');
-                return;
-            }
-            const leftTerms = parseSideString(parts[0]);
-            const rightTerms = parseSideString(parts[1]);
-            if (!leftTerms || !rightTerms || leftTerms.length === 0 || rightTerms.length === 0) {
-                setStatusMessage('⚠️', 'Не удалось прочитать уравнение. Пример записи: 4x - 8 = 2x + 6', 'error');
-                return;
-            }
-
-            const lx = leftTerms.filter(t => t.isVar).reduce((s, t) => s + t.coeff, 0);
-            const ln = leftTerms.filter(t => !t.isVar).reduce((s, t) => s + t.coeff, 0);
-            const rx = rightTerms.filter(t => t.isVar).reduce((s, t) => s + t.coeff, 0);
-            const rn = rightTerms.filter(t => !t.isVar).reduce((s, t) => s + t.coeff, 0);
-
-            const netX = lx - rx;
-            const netN = rn - ln;
-            if (netX === 0 || netN % netX !== 0) {
-                setStatusMessage('⚠️', 'У этого уравнения нет целого корня. Введите пример с целым ответом!', 'error');
-                return;
-            }
-
-            Notebook.root = netN / netX;
-            Notebook.left = leftTerms;
-            Notebook.right = rightTerms;
-            Notebook.undoStack = [];
-            Notebook.historyLines = [];
-            Notebook.pendingSign = null;
-            Notebook.pendingMerge = null;
-            Notebook.pendingDivision = false;
-            Notebook.isSolved = false;
-            document.getElementById('victory-notebook-stamp').classList.add('hidden');
-            document.getElementById('custom-input-bar').classList.add('hidden');
-
-            SoundFX.success();
-            setStatusMessage('✍️', 'Свой пример записан в тетрадь! Решай по шагам.', 'success');
-            renderNotebookAll();
+        function startNewEquation() {
+            const gen = buildEquationByMode(State.mode === 'custom' ? 'lvl2' : State.mode);
+            State.left = cloneSide(gen.left);
+            State.right = cloneSide(gen.right);
+            State.history = [];
+            State.solved = false;
+            State.activeOp = null;
+            State.livePreview = null;
+            document.getElementById('undo-btn').disabled = true;
+            document.getElementById('win-banner').classList.add('hidden');
+            closeNumpadDrawer();
+            updateRogueHUD();
+            renderAll();
         }
 
         /* =========================================================================
-           12. ГОРЯЧИЕ КЛАВИШИ И ПИКСЕЛЬНЫЙ САЛЮТ
+           3. ФОРМАТИРОВАНИЕ И ЖИВАЯ РУКОПИСНАЯ ТЕТРАДЬ (БЕЗ РАМОК)
         ========================================================================= */
-        window.addEventListener('keydown', (e) => {
-            if (Notebook.pendingSign) {
-                if (e.key === '+' || e.key === '=') resolvePendingSign('+');
-                if (e.key === '-') resolvePendingSign('-');
-                if (e.key === 'Escape') cancelPendingSign();
+        function formatRuNum(num) {
+            return Number(num.toFixed(4)).toString().replace('.', ',');
+        }
+
+        function formatHistoryTerm(val, isX, isFirst) {
+            if (val === 0 && !isX) return isFirst ? '0' : '+ 0';
+            let sign = '';
+            if (val < 0) {
+                sign = isFirst ? '−' : '− ';
+            } else {
+                sign = isFirst ? '' : '+ ';
+            }
+            let absNum = Math.abs(val);
+            let numStr = (isX && absNum === 1) ? '' : formatRuNum(absNum);
+            let varStr = isX ? 'x' : '';
+            return `${sign}${numStr}${varStr}`;
+        }
+
+        function renderSideToHTML(sideArr, highlightIds = []) {
+            if (!Array.isArray(sideArr) || sideArr.length === 0) return '0';
+            return sideArr.map((t, idx) => {
+                const str = formatHistoryTerm(t.val, t.isX, idx === 0);
+                if (highlightIds.includes(t.id)) {
+                    return `<span class="ink-underline-sim">${str}</span>`;
+                }
+                return str;
+            }).join(' ');
+        }
+
+        function isReadyForDivision() {
+            if (State.left.length === 1 && State.right.length === 1) {
+                const l = State.left[0];
+                const r = State.right[0];
+                if (l.isX && !r.isX) return { xSide: 'left', numSide: 'right', xTerm: l, numTerm: r };
+                if (!l.isX && r.isX) return { xSide: 'right', numSide: 'left', xTerm: r, numTerm: l };
+            }
+            return null;
+        }
+
+        function checkWinCondition() {
+            if (State.solved) return;
+            if (State.left.length === 1 && State.right.length === 1) {
+                const l = State.left[0];
+                const r = State.right[0];
+                if (l.isX && !r.isX && l.val === 1) {
+                    finishEquation(r.val);
+                } else if (!l.isX && r.isX && r.val === 1) {
+                    finishEquation(l.val);
+                }
+            }
+        }
+
+        function finishEquation(rootVal = 0) {
+            State.solved = true;
+            State.score++;
+            document.getElementById('score-counter').innerText = State.score;
+            SoundEngine.success();
+            FX.burst(window.innerWidth / 2, window.innerHeight / 2, ['#3b82f6', '#10b981', '#facc15', '#ec4899'], 36);
+
+            if (State.mode === 'rogue') {
+                handleRogueWaveVictory();
                 return;
             }
-            if (e.key === 'Enter') {
-                if (Notebook.pendingMerge) confirmInlineMerge();
-                else if (Notebook.pendingDivision) confirmInlineDivision();
+
+            document.getElementById('win-banner').classList.remove('hidden');
+        }
+
+        /* Рендер тетрадной записи сверху прямо по клеточкам */
+        function renderNotebookTopSection() {
+            const container = document.getElementById('history-container');
+            container.innerHTML = '';
+
+            // 1. Предыдущие шаги (написанные ручкой строчки, выровненные по знаку "=")
+            State.history.forEach((step, idx) => {
+                const row = document.createElement('div');
+                row.className = 'notebook-ink-grid pen-writing ink-step-row cursor-pointer';
+                row.title = 'Вернуться к этой строчке';
+                row.onclick = () => {
+                    if (State.activeOp) closeNumpadDrawer();
+                    State.activeOp = null;
+                    State.left = cloneSide(step.left);
+                    State.right = cloneSide(step.right);
+                    State.history = State.history.slice(0, idx);
+                    State.solved = false;
+                    document.getElementById('win-banner').classList.add('hidden');
+                    if (State.history.length === 0) document.getElementById('undo-btn').disabled = true;
+                    renderAll();
+                };
+
+                row.innerHTML = `
+                    <div class="text-right pr-1">${renderSideToHTML(step.left)}</div>
+                    <div class="text-center font-bold px-1">=</div>
+                    <div class="text-left pl-1">${renderSideToHTML(step.right)}</div>
+                `;
+                container.appendChild(row);
+            });
+
+            // 2. Текущая живая строка внизу столбика
+            const currentRow = document.createElement('div');
+            currentRow.className = 'notebook-ink-grid pen-writing ink-current-row';
+
+            let leftHTML = renderSideToHTML(State.left);
+            let rightHTML = renderSideToHTML(State.right);
+
+            if (State.livePreview && State.livePreview.type === 'drag') {
+                const lp = State.livePreview;
+                const highlight = lp.hoverTargetId ? [lp.termId, lp.hoverTargetId] : [];
+                const fromArr = lp.fromSide === 'left' ? State.left : State.right;
+                const filteredFrom = fromArr.filter(t => t.id !== lp.termId);
+
+                if (lp.crossed) {
+                    const movedVal = -lp.termObj.val;
+                    const movedStr = `<span class="text-rose-600 font-bold">${formatHistoryTerm(movedVal, lp.termObj.isX, false)}</span>`;
+                    if (lp.fromSide === 'left') {
+                        leftHTML = renderSideToHTML(filteredFrom);
+                        rightHTML = `${renderSideToHTML(State.right)} ${movedStr}`;
+                    } else {
+                        leftHTML = `${renderSideToHTML(State.left)} ${movedStr}`;
+                        rightHTML = renderSideToHTML(filteredFrom);
+                    }
+                } else {
+                    leftHTML = renderSideToHTML(State.left, highlight);
+                    rightHTML = renderSideToHTML(State.right, highlight);
+                }
+            } else if (State.activeOp && State.activeOp.type === 'merge') {
+                const op = State.activeOp;
+                const typed = State.numpadBuffer === '' ? '?' : State.numpadBuffer.replace('.', ',');
+                const previewChip = `<span class="text-amber-700 underline">${typed}${op.isX ? 'x' : ''}</span>`;
+                const buildSide = (arr) => {
+                    const rest = arr.filter(t => t.id !== op.sourceId && t.id !== op.targetId);
+                    const base = rest.length > 0 ? renderSideToHTML(rest) + ' + ' : '';
+                    return base + previewChip;
+                };
+                if (op.side === 'left') leftHTML = buildSide(State.left);
+                else rightHTML = buildSide(State.right);
+            } else if (State.activeOp && State.activeOp.type === 'divide') {
+                const op = State.activeOp;
+                const typed = State.numpadBuffer === '' ? `${formatRuNum(op.dividend)} : ${formatRuNum(op.divisor)}` : State.numpadBuffer.replace('.', ',');
+                if (op.xSide === 'left') {
+                    leftHTML = 'x';
+                    rightHTML = `<span class="text-amber-700 underline">${typed}</span>`;
+                } else {
+                    leftHTML = `<span class="text-amber-700 underline">${typed}</span>`;
+                    rightHTML = 'x';
+                }
             }
-            if (e.key === 'Escape' && Notebook.pendingMerge) {
-                cancelInlineAction();
+
+            currentRow.innerHTML = `
+                <div class="text-right pr-1">${leftHTML}</div>
+                <div class="text-center font-bold px-1">=</div>
+                <div class="text-left pl-1">${rightHTML}</div>
+            `;
+            container.appendChild(currentRow);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        /* =========================================================================
+           4. РЕНДЕРИНГ ИГРОВОГО ПОЛЯ СЛАГАЕМЫХ И КАПСУЛ/ДРОБЕЙ
+        ========================================================================= */
+        function formatCoeffPart(val, isFirst) {
+            let sign = '';
+            if (val < 0) sign = isFirst ? '−' : '− ';
+            else sign = isFirst ? '' : '+ ';
+            let absNum = Math.abs(val);
+            let numStr = absNum === 1 ? '' : formatRuNum(absNum);
+            return `${sign}${numStr}`;
+        }
+
+        function formatNumberChip(val, isFirst) {
+            let sign = '';
+            if (val < 0) sign = isFirst ? '−' : '− ';
+            else sign = isFirst ? '' : '+ ';
+            return `${sign}${formatRuNum(Math.abs(val))}`;
+        }
+
+        function createTermDOM(term, sideName, isFirstOnSide) {
+            const wrapper = document.createElement('div');
+            const styleClass = term.val > 0 ? 'style-pos' : (term.val < 0 ? 'style-neg' : 'style-zero');
+            wrapper.className = `term-unit ${styleClass}`;
+            wrapper.dataset.id = term.id;
+            wrapper.dataset.side = sideName;
+
+            const divReady = isReadyForDivision();
+
+            if (term.isX) {
+                const coeffEl = document.createElement('div');
+                const isCoeffReady = divReady && divReady.xSide === sideName && term.val !== 1;
+                coeffEl.className = `coeff-part ${isCoeffReady ? 'coeff-ready' : ''}`;
+                coeffEl.innerText = formatCoeffPart(term.val, isFirstOnSide);
+                coeffEl.dataset.part = 'coeff';
+
+                const varEl = document.createElement('div');
+                varEl.className = 'var-part';
+                varEl.innerText = 'x';
+                varEl.dataset.part = 'var';
+
+                if (!State.solved && !State.activeOp) {
+                    coeffEl.addEventListener('pointerdown', (e) => onCoeffPointerDown(e, wrapper, term, sideName));
+                    varEl.addEventListener('pointerdown', (e) => onWholeTermPointerDown(e, wrapper, term, sideName));
+                }
+
+                wrapper.appendChild(coeffEl);
+                wrapper.appendChild(varEl);
+            } else {
+                const numEl = document.createElement('div');
+                numEl.className = 'num-chip';
+                numEl.innerText = formatNumberChip(term.val, isFirstOnSide);
+                if (!State.solved && !State.activeOp) {
+                    numEl.addEventListener('pointerdown', (e) => onWholeTermPointerDown(e, wrapper, term, sideName));
+                }
+                wrapper.appendChild(numEl);
+            }
+
+            return wrapper;
+        }
+
+        function renderSideInteractive(sideName, container) {
+            container.innerHTML = '';
+            const arr = State[sideName];
+
+            // Если на этой стороне открыта капсула слияния
+            if (State.activeOp && State.activeOp.type === 'merge' && State.activeOp.side === sideName) {
+                const op = State.activeOp;
+                let capsuleInserted = false;
+                arr.forEach((term, idx) => {
+                    if (term.id === op.sourceId || term.id === op.targetId) {
+                        if (!capsuleInserted) {
+                            capsuleInserted = true;
+                            const cap = document.createElement('div');
+                            cap.className = 'active-capsule math-font';
+                            const t1 = formatHistoryTerm(op.val1, op.isX, true);
+                            const t2 = formatHistoryTerm(op.val2, op.isX, false);
+                            const typed = State.numpadBuffer === '' ? '?' : State.numpadBuffer.replace('.', ',');
+                            cap.innerText = `${t1} ${t2} = ${typed}${op.isX ? 'x' : ''}`;
+                            container.appendChild(cap);
+                        }
+                    } else {
+                        container.appendChild(createTermDOM(term, sideName, idx === 0));
+                    }
+                });
+                return;
+            }
+
+            // Если открыто финальное деление дробью
+            if (State.activeOp && State.activeOp.type === 'divide') {
+                const op = State.activeOp;
+                if (sideName === op.xSide) {
+                    container.appendChild(createTermDOM({ id: 'x_only', val: 1, isX: true }, sideName, true));
+                    return;
+                }
+                if (sideName === op.numSide) {
+                    const frac = document.createElement('div');
+                    frac.className = 'active-fraction-box math-font';
+                    frac.innerHTML = `
+                        <span>${formatRuNum(op.dividend)}</span>
+                        <div class="fraction-bar"></div>
+                        <span>${formatRuNum(op.divisor)}</span>
+                    `;
+                    container.appendChild(frac);
+                    return;
+                }
+            }
+
+            arr.forEach((term, idx) => {
+                container.appendChild(createTermDOM(term, sideName, idx === 0));
+            });
+        }
+
+        function renderEquationStage() {
+            const leftContainer = document.getElementById('left-side');
+            const rightContainer = document.getElementById('right-side');
+
+            renderSideInteractive('left', leftContainer);
+            renderSideInteractive('right', rightContainer);
+
+            checkWinCondition();
+        }
+
+        function renderAll() {
+            renderNotebookTopSection();
+            renderEquationStage();
+        }
+
+        /* =========================================================================
+           5. ТАКТИЛЬНОЕ ПЕРЕТАСКИВАНИЕ (ПОРТАЛ И СЛИЯНИЕ С ПОДДЕРЖКОЙ СМАРТФОНОВ)
+        ========================================================================= */
+        let dragState = null;
+
+        function findTargetTermNearPoint(x, y, excludeEl) {
+            const directEl = document.elementFromPoint(x, y);
+            const directUnit = directEl ? directEl.closest('.term-unit') : null;
+            if (directUnit && directUnit !== excludeEl && directUnit.dataset.id) {
+                return directUnit;
+            }
+
+            const allUnits = document.querySelectorAll('#equation-stage .term-unit');
+            let bestUnit = null;
+            let bestDist = 26;
+            allUnits.forEach(u => {
+                if (u === excludeEl || !u.dataset.id) return;
+                const r = u.getBoundingClientRect();
+                const dx = Math.max(r.left - x, 0, x - r.right);
+                const dy = Math.max(r.top - y, 0, y - r.bottom);
+                const dist = Math.hypot(dx, dy);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestUnit = u;
+                }
+            });
+            return bestUnit;
+        }
+
+        function onWholeTermPointerDown(e, unitEl, termObj, sideName) {
+            if (State.activeOp || State.solved || dragState || coeffDragState) return;
+            if (e.button !== undefined && e.button !== 0) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+            SoundEngine.pickup();
+
+            try { unitEl.setPointerCapture(e.pointerId); } catch (err) {}
+            const rect = unitEl.getBoundingClientRect();
+            const portalRect = document.getElementById('portal-zone').getBoundingClientRect();
+            const portalCenterX = portalRect.left + portalRect.width / 2;
+
+            const touchLiftY = (e.pointerType === 'touch') ? 28 : 0;
+
+            const floating = unitEl.cloneNode(true);
+            floating.classList.add('dragging-clone');
+            floating.style.minWidth = rect.width + 'px';
+            floating.style.height = rect.height + 'px';
+            document.body.appendChild(floating);
+
+            unitEl.style.opacity = '0.22';
+
+            dragState = {
+                pointerId: e.pointerId,
+                originEl: unitEl,
+                floatingEl: floating,
+                term: termObj,
+                initialSide: sideName,
+                shiftX: e.clientX - rect.left,
+                shiftY: (e.clientY - rect.top) + touchLiftY,
+                portalCenterX,
+                crossed: false,
+                hoverTargetEl: null,
+                hoverTargetData: null,
+                incompatibleEl: null
+            };
+
+            State.livePreview = {
+                type: 'drag',
+                termId: termObj.id,
+                termObj: termObj,
+                fromSide: sideName,
+                crossed: false,
+                hoverTargetId: null
+            };
+            renderNotebookTopSection();
+
+            updateWholeTermPosition(e.clientX, e.clientY);
+
+            unitEl.addEventListener('pointermove', onWholeTermPointerMove);
+            unitEl.addEventListener('pointerup', onWholeTermPointerUp);
+            unitEl.addEventListener('pointercancel', onWholeTermPointerUp);
+        }
+
+        function updateFloatingVisualSign(floatingEl, val, isX) {
+            floatingEl.classList.remove('style-pos', 'style-neg');
+            void floatingEl.offsetWidth;
+            floatingEl.classList.add(val >= 0 ? 'style-pos' : 'style-neg');
+
+            const signPrefix = val >= 0 ? '+' : '−';
+            const absNum = Math.abs(val);
+            const absStr = (isX && absNum === 1) ? '' : formatRuNum(absNum);
+            if (isX) {
+                const cPart = floatingEl.querySelector('.coeff-part');
+                if (cPart) cPart.innerText = `${signPrefix}${absStr}`;
+            } else {
+                const nPart = floatingEl.querySelector('.num-chip');
+                if (nPart) nPart.innerText = `${signPrefix}${formatRuNum(absNum)}`;
+            }
+        }
+
+        function updateWholeTermPosition(clientX, clientY) {
+            if (!dragState) return;
+            const portalRect = document.getElementById('portal-zone').getBoundingClientRect();
+            const portalX = portalRect.left + portalRect.width / 2;
+            dragState.portalCenterX = portalX;
+
+            const dist = clientX - portalX;
+            const absDist = Math.abs(dist);
+
+            let renderX = clientX;
+            const membrane = document.getElementById('portal-membrane');
+            const eqSign = document.getElementById('equals-sign');
+
+            if (absDist < 38) {
+                renderX = portalX + dist * 0.42;
+                const bendX = 30 + (dist * 0.65);
+                membrane.setAttribute('d', `M 30 8 Q ${bendX} 56 30 104`);
+                eqSign.style.transform = 'scale(1.15)';
+            } else {
+                membrane.setAttribute('d', 'M 30 8 Q 30 56 30 104');
+                eqSign.style.transform = 'scale(1)';
+            }
+
+            const nowCrossed = (dragState.initialSide === 'left' && clientX > portalX + 10) ||
+                               (dragState.initialSide === 'right' && clientX < portalX - 10);
+
+            if (nowCrossed !== dragState.crossed) {
+                dragState.crossed = nowCrossed;
+                const newVal = dragState.crossed ? -dragState.term.val : dragState.term.val;
+                updateFloatingVisualSign(dragState.floatingEl, newVal, dragState.term.isX);
+
+                SoundEngine.portalSnap();
+                FX.burst(portalX, clientY, newVal >= 0 ? ['#60a5fa', '#3b82f6', '#ffffff'] : ['#fb7185', '#e11d48', '#ffffff'], 18);
+                if (navigator.vibrate) navigator.vibrate(30);
+            }
+
+            const clampedX = Math.max(8, Math.min(window.innerWidth - 50, renderX - dragState.shiftX));
+            const clampedY = Math.max(8, Math.min(window.innerHeight - 50, clientY - dragState.shiftY));
+
+            dragState.floatingEl.style.left = clampedX + 'px';
+            dragState.floatingEl.style.top = clampedY + 'px';
+        }
+
+        function onWholeTermPointerMove(e) {
+            if (!dragState || e.pointerId !== dragState.pointerId) return;
+            updateWholeTermPosition(e.clientX, e.clientY);
+
+            if (dragState.hoverTargetEl) {
+                dragState.hoverTargetEl.classList.remove('merge-glow');
+                dragState.hoverTargetEl = null;
+                dragState.hoverTargetData = null;
+            }
+            if (dragState.incompatibleEl) {
+                dragState.incompatibleEl.classList.remove('incompatible-glow');
+                dragState.incompatibleEl = null;
+            }
+
+            if (!dragState.crossed) {
+                const targetUnit = findTargetTermNearPoint(e.clientX, e.clientY, dragState.originEl);
+
+                if (targetUnit && targetUnit.dataset.id) {
+                    const targetSide = targetUnit.dataset.side;
+                    if (targetSide === dragState.initialSide) {
+                        const targetObj = State[targetSide].find(t => t.id === targetUnit.dataset.id);
+                        if (targetObj) {
+                            if (targetObj.isX === dragState.term.isX || (!targetObj.isX && targetObj.val === 0)) {
+                                dragState.hoverTargetEl = targetUnit;
+                                dragState.hoverTargetData = targetObj;
+                                targetUnit.classList.add('merge-glow');
+                            } else {
+                                dragState.incompatibleEl = targetUnit;
+                                targetUnit.classList.add('incompatible-glow');
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (State.livePreview) {
+                const hoveredId = dragState.hoverTargetData ? dragState.hoverTargetData.id : null;
+                if (State.livePreview.crossed !== dragState.crossed || State.livePreview.hoverTargetId !== hoveredId) {
+                    State.livePreview.crossed = dragState.crossed;
+                    State.livePreview.hoverTargetId = hoveredId;
+                    renderNotebookTopSection();
+                }
+            }
+        }
+
+        function onWholeTermPointerUp(e) {
+            if (!dragState || e.pointerId !== dragState.pointerId) return;
+            const st = dragState;
+            dragState = null;
+            State.livePreview = null;
+
+            st.originEl.removeEventListener('pointermove', onWholeTermPointerMove);
+            st.originEl.removeEventListener('pointerup', onWholeTermPointerUp);
+            st.originEl.removeEventListener('pointercancel', onWholeTermPointerUp);
+            try { st.originEl.releasePointerCapture(e.pointerId); } catch (err) {}
+
+            document.getElementById('portal-membrane').setAttribute('d', 'M 30 8 Q 30 56 30 104');
+            document.getElementById('equals-sign').style.transform = 'scale(1)';
+
+            if (st.hoverTargetEl) st.hoverTargetEl.classList.remove('merge-glow');
+            if (st.incompatibleEl) st.incompatibleEl.classList.remove('incompatible-glow');
+            st.floatingEl.remove();
+
+            // 1. Перенос через знак "="
+            if (st.crossed) {
+                // Не переносим одиночный ноль впустую
+                if (State[st.initialSide].length === 1 && st.term.val === 0 && !st.term.isX) {
+                    renderAll();
+                    return;
+                }
+
+                saveUndoSnapshot();
+                const targetSide = st.initialSide === 'left' ? 'right' : 'left';
+                
+                State[st.initialSide] = State[st.initialSide].filter(t => t.id !== st.term.id);
+                if (State[st.initialSide].length === 0) {
+                    State[st.initialSide].push(createTerm(0, false));
+                }
+
+                const transferred = createTerm(-st.term.val, st.term.isX);
+                if (State[targetSide].length === 1 && State[targetSide][0].val === 0 && !State[targetSide][0].isX) {
+                    State[targetSide] = [transferred];
+                } else {
+                    State[targetSide].push(transferred);
+                }
+
+                tickRogueStep(true);
+                renderAll();
+                return;
+            }
+
+            // 2. Несовместимые слагаемые
+            if (st.incompatibleEl) {
+                SoundEngine.boing();
+                renderAll();
+                return;
+            }
+
+            // 3. Слияние подобных слагаемых в капсулу (или мгновенный синтез по перку)
+            if (st.hoverTargetData) {
+                const sumVal = Number((st.hoverTargetData.val + st.term.val).toFixed(4));
+
+                // Перк "Малый Синтез": если |ответ| <= 5, складываем мгновенно без калькулятора
+                if (State.mode === 'rogue' && hasPerk('small_synth') && Math.abs(sumVal) <= 5) {
+                    saveUndoSnapshot();
+                    const targetSideArr = State[st.initialSide];
+                    let newArr = [];
+                    let inserted = false;
+                    targetSideArr.forEach(t => {
+                        if (t.id === st.term.id || t.id === st.hoverTargetData.id) {
+                            if (!inserted) {
+                                inserted = true;
+                                if (Math.abs(sumVal) > 0.00001) {
+                                    newArr.push(createTerm(sumVal, st.term.isX));
+                                }
+                            }
+                        } else {
+                            newArr.push(t);
+                        }
+                    });
+                    if (newArr.length === 0) newArr.push(createTerm(0, false));
+                    State[st.initialSide] = newArr;
+
+                    SoundEngine.success();
+                    spawnFloatingPopup('rogue-hero-card', '🔥 Авто!', 'text-amber-300');
+                    tickRogueStep(false);
+                    renderAll();
+                    return;
+                }
+
+                const leftBefore = cloneSide(State.left);
+                const rightBefore = cloneSide(State.right);
+
+                State.activeOp = {
+                    type: 'merge',
+                    side: st.initialSide,
+                    sourceId: st.term.id,
+                    targetId: st.hoverTargetData.id,
+                    val1: st.hoverTargetData.val,
+                    val2: st.term.val,
+                    isX: st.term.isX,
+                    hadError: false,
+                    leftBefore,
+                    rightBefore
+                };
+
+                SoundEngine.capsuleLock();
+                openNumpadForMerge();
+                renderAll();
+                return;
+            }
+
+            renderAll();
+        }
+
+        /* =========================================================================
+           6. ПЕРЕТАСКИВАНИЕ КОЭФФИЦИЕНТА ДЛЯ ДЕЛЕНИЯ
+        ========================================================================= */
+        let coeffDragState = null;
+
+        function onCoeffPointerDown(e, unitEl, termObj, sideName) {
+            if (State.activeOp || State.solved || dragState || coeffDragState) return;
+            if (e.button !== undefined && e.button !== 0) return;
+
+            const divInfo = isReadyForDivision();
+            if (!divInfo || divInfo.xSide !== sideName || termObj.val === 1) {
+                onWholeTermPointerDown(e, unitEl, termObj, sideName);
+                return;
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
+            SoundEngine.pickup();
+
+            const coeffEl = e.currentTarget;
+            try { coeffEl.setPointerCapture(e.pointerId); } catch (err) {}
+            const rect = coeffEl.getBoundingClientRect();
+            const touchLiftY = (e.pointerType === 'touch') ? 28 : 0;
+
+            const floating = document.createElement('div');
+            const styleClass = termObj.val < 0 ? 'style-neg' : 'style-pos';
+            floating.className = `term-unit ${styleClass} dragging-clone`;
+            floating.style.padding = '8px 16px';
+            floating.innerText = formatRuNum(termObj.val);
+            document.body.appendChild(floating);
+
+            coeffEl.style.opacity = '0.2';
+
+            const targetSideEl = document.getElementById(`${divInfo.numSide}-side`);
+            const targetNumUnit = targetSideEl.querySelector('.term-unit');
+
+            coeffDragState = {
+                pointerId: e.pointerId,
+                coeffEl,
+                floatingEl: floating,
+                divInfo,
+                targetNumUnit,
+                shiftX: e.clientX - rect.left,
+                shiftY: (e.clientY - rect.top) + touchLiftY,
+                overFractionZone: false
+            };
+
+            moveCoeffClone(e.clientX, e.clientY);
+
+            coeffEl.addEventListener('pointermove', onCoeffPointerMove);
+            coeffEl.addEventListener('pointerup', onCoeffPointerUp);
+            coeffEl.addEventListener('pointercancel', onCoeffPointerUp);
+        }
+
+        function moveCoeffClone(clientX, clientY) {
+            if (!coeffDragState) return;
+            const clampedX = Math.max(8, Math.min(window.innerWidth - 50, clientX - coeffDragState.shiftX));
+            const clampedY = Math.max(8, Math.min(window.innerHeight - 50, clientY - coeffDragState.shiftY));
+            coeffDragState.floatingEl.style.left = clampedX + 'px';
+            coeffDragState.floatingEl.style.top = clampedY + 'px';
+        }
+
+        function onCoeffPointerMove(e) {
+            if (!coeffDragState || e.pointerId !== coeffDragState.pointerId) return;
+            moveCoeffClone(e.clientX, e.clientY);
+
+            if (coeffDragState.targetNumUnit) {
+                const r = coeffDragState.targetNumUnit.getBoundingClientRect();
+                const inHoriz = e.clientX >= r.left - 58 && e.clientX <= r.right + 58;
+                const inVert = e.clientY >= r.top - 45 && e.clientY <= r.bottom + 105;
+
+                if (inHoriz && inVert) {
+                    coeffDragState.overFractionZone = true;
+                    coeffDragState.targetNumUnit.style.transform = 'translateY(-10px) scale(1.06)';
+                    coeffDragState.targetNumUnit.classList.add('merge-glow');
+                } else {
+                    coeffDragState.overFractionZone = false;
+                    coeffDragState.targetNumUnit.style.transform = '';
+                    coeffDragState.targetNumUnit.classList.remove('merge-glow');
+                }
+            }
+        }
+
+        function onCoeffPointerUp(e) {
+            if (!coeffDragState || e.pointerId !== coeffDragState.pointerId) return;
+            const cd = coeffDragState;
+            coeffDragState = null;
+
+            cd.coeffEl.removeEventListener('pointermove', onCoeffPointerMove);
+            cd.coeffEl.removeEventListener('pointerup', onCoeffPointerUp);
+            cd.coeffEl.removeEventListener('pointercancel', onCoeffPointerUp);
+            try { cd.coeffEl.releasePointerCapture(e.pointerId); } catch (err) {}
+            cd.floatingEl.remove();
+
+            if (cd.targetNumUnit) {
+                cd.targetNumUnit.style.transform = '';
+                cd.targetNumUnit.classList.remove('merge-glow');
+            }
+
+            if (cd.overFractionZone) {
+                const dividend = cd.divInfo.numTerm.val;
+                const divisor = cd.divInfo.xTerm.val;
+                const quotient = Number((dividend / divisor).toFixed(4));
+
+                // Перк "Снайпер-Делитель": если делится нацело, делим мгновенно без калькулятора
+                if (State.mode === 'rogue' && hasPerk('sniper_div') && Number.isInteger(quotient)) {
+                    saveUndoSnapshot();
+                    State[cd.divInfo.xSide] = [createTerm(1, true)];
+                    State[cd.divInfo.numSide] = [createTerm(quotient, false)];
+                    SoundEngine.success();
+                    spawnFloatingPopup('rogue-hero-card', '🎯 Авто!', 'text-amber-300');
+                    tickRogueStep(false);
+                    renderAll();
+                    return;
+                }
+
+                const leftBefore = cloneSide(State.left);
+                const rightBefore = cloneSide(State.right);
+
+                State.activeOp = {
+                    type: 'divide',
+                    xSide: cd.divInfo.xSide,
+                    numSide: cd.divInfo.numSide,
+                    dividend,
+                    divisor,
+                    hadError: false,
+                    leftBefore,
+                    rightBefore
+                };
+
+                SoundEngine.capsuleLock();
+                openNumpadForDivision();
+                renderAll();
+                return;
+            }
+
+            renderAll();
+        }
+
+        /* =========================================================================
+           7. ИГРОВОЙ NUMPAD С ЗАПЯТОЙ И ПОДДЕРЖКОЙ КЛАВИАТУРЫ
+        ========================================================================= */
+        function openNumpadForMerge() {
+            const op = State.activeOp;
+            State.numpadBuffer = '';
+            const t1 = formatHistoryTerm(op.val1, op.isX, true);
+            const t2 = formatHistoryTerm(op.val2, op.isX, false);
+            document.getElementById('numpad-formula').innerText = `${t1} ${t2} =`;
+            document.getElementById('numpad-value').innerText = '?';
+            const unitEl = document.getElementById('numpad-x-unit');
+            if (op.isX) unitEl.classList.remove('hidden');
+            else unitEl.classList.add('hidden');
+
+            document.body.classList.add('numpad-open');
+            document.getElementById('numpad-drawer').classList.remove('translate-y-full');
+        }
+
+        function openNumpadForDivision() {
+            const op = State.activeOp;
+            State.numpadBuffer = '';
+            const divStr = op.divisor < 0 ? `(${formatRuNum(op.divisor)})` : `${formatRuNum(op.divisor)}`;
+            document.getElementById('numpad-formula').innerText = `${formatRuNum(op.dividend)} / ${divStr} =`;
+            document.getElementById('numpad-value').innerText = '?';
+            document.getElementById('numpad-x-unit').classList.add('hidden');
+
+            document.body.classList.add('numpad-open');
+            document.getElementById('numpad-drawer').classList.remove('translate-y-full');
+        }
+
+        function closeNumpadDrawer() {
+            document.body.classList.remove('numpad-open');
+            document.getElementById('numpad-drawer').classList.add('translate-y-full');
+        }
+
+        function cancelActiveOperation() {
+            if (State.activeOp) {
+                State.left = State.activeOp.leftBefore;
+                State.right = State.activeOp.rightBefore;
+                State.activeOp = null;
+            }
+            closeNumpadDrawer();
+            renderAll();
+        }
+
+        function pressNumpad(char) {
+            if (!State.activeOp) return;
+            if (char === 'BACK') {
+                State.numpadBuffer = State.numpadBuffer.slice(0, -1);
+            } else if (char === '-') {
+                if (State.numpadBuffer.startsWith('-')) State.numpadBuffer = State.numpadBuffer.slice(1);
+                else State.numpadBuffer = '-' + State.numpadBuffer;
+            } else if (char === ',') {
+                if (!State.numpadBuffer.includes('.')) {
+                    if (State.numpadBuffer === '' || State.numpadBuffer === '-') {
+                        State.numpadBuffer += '0.';
+                    } else {
+                        State.numpadBuffer += '.';
+                    }
+                }
+            } else if (State.numpadBuffer.length < 8) {
+                State.numpadBuffer += char;
+            }
+
+            const disp = State.numpadBuffer === '' ? '?' : State.numpadBuffer.replace('.', ',');
+            document.getElementById('numpad-value').innerText = disp;
+            renderAll();
+        }
+
+        function submitNumpad() {
+            if (!State.activeOp || State.numpadBuffer === '' || State.numpadBuffer === '-') return;
+            const userNum = parseFloat(State.numpadBuffer);
+            if (isNaN(userNum)) return;
+
+            const op = State.activeOp;
+            let correctNum = 0;
+
+            if (op.type === 'merge') {
+                correctNum = op.val1 + op.val2;
+            } else if (op.type === 'divide') {
+                correctNum = op.dividend / op.divisor;
+            }
+
+            if (Math.abs(userNum - correctNum) < 0.0001) {
+                SoundEngine.success();
+                closeNumpadDrawer();
+
+                State.history.push({
+                    left: cloneSide(op.leftBefore),
+                    right: cloneSide(op.rightBefore)
+                });
+                document.getElementById('undo-btn').disabled = false;
+
+                if (op.type === 'merge') {
+                    const targetSideArr = State[op.side];
+                    let newArr = [];
+                    let inserted = false;
+                    targetSideArr.forEach(t => {
+                        if (t.id === op.sourceId || t.id === op.targetId) {
+                            if (!inserted) {
+                                inserted = true;
+                                if (Math.abs(correctNum) > 0.00001) {
+                                    newArr.push(createTerm(correctNum, op.isX));
+                                }
+                            }
+                        } else {
+                            newArr.push(t);
+                        }
+                    });
+                    if (newArr.length === 0) {
+                        newArr.push(createTerm(0, false));
+                    }
+                    State[op.side] = newArr;
+                } else if (op.type === 'divide') {
+                    State[op.xSide] = [createTerm(1, true)];
+                    State[op.numSide] = [createTerm(Number(correctNum.toFixed(4)), false)];
+                }
+
+                // Перк "Инерция Ума": если посчитано верно с 1-й попытки, откатываем таймер врага на +1⏳
+                if (State.mode === 'rogue' && hasPerk('inertia') && !op.hadError && State.rogue.enemy) {
+                    State.rogue.enemy.timer += 1;
+                    spawnFloatingPopup('rogue-enemy-card', '⚡ +1⏳', 'text-amber-300');
+                }
+
+                State.activeOp = null;
+                tickRogueStep(false);
+                renderAll();
+            } else {
+                SoundEngine.boing();
+                op.hadError = true;
+                if (State.mode === 'rogue') {
+                    State.rogue.hadErrorThisWave = true;
+                    const died = damageHero(1, 'Ошибка!');
+                    if (died) {
+                        closeNumpadDrawer();
+                        return;
+                    }
+                }
+                const valEl = document.getElementById('numpad-value');
+                valEl.classList.add('text-rose-500');
+                setTimeout(() => valEl.classList.remove('text-rose-500'), 350);
+            }
+        }
+
+        // Поддержка ввода с физической клавиатуры
+        window.addEventListener('keydown', (e) => {
+            if (!State.activeOp) return;
+            if (e.key >= '0' && e.key <= '9') {
+                pressNumpad(e.key);
+            } else if (e.key === '-' || e.key === '_') {
+                pressNumpad('-');
+            } else if (e.key === ',' || e.key === '.') {
+                pressNumpad(',');
+            } else if (e.key === 'Backspace') {
+                pressNumpad('BACK');
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                submitNumpad();
+            } else if (e.key === 'Escape') {
+                cancelActiveOperation();
             }
         });
 
-        function launchPixelConfetti() {
-            const canvas = document.getElementById('confetti-canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-
-            const palette = ['#facc15', '#4ade80', '#38bdf8', '#f472b6', '#fb923c'];
-            const blocks = Array.from({ length: 55 }, () => ({
-                x: canvas.width / 2 + (Math.random() - 0.5) * 260,
-                y: canvas.height / 2,
-                vx: (Math.random() - 0.5) * 12,
-                vy: -Math.random() * 12 - 3,
-                size: Math.floor(Math.random() * 6 + 6),
-                color: palette[Math.floor(Math.random() * palette.length)],
-                alpha: 1
-            }));
-
-            let frame = 0;
-            function step() {
-                frame++;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                blocks.forEach(b => {
-                    b.x += b.vx;
-                    b.y += b.vy;
-                    b.vy += 0.35;
-                    if (frame > 35) b.alpha -= 0.03;
-                    ctx.globalAlpha = Math.max(0, b.alpha);
-                    ctx.fillStyle = b.color;
-                    ctx.fillRect(Math.round(b.x), Math.round(b.y), b.size, b.size);
-                });
-                if (frame < 75) requestAnimationFrame(step);
-                else ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
-            requestAnimationFrame(step);
+        /* =========================================================================
+           8. МОДАЛКА КОНСТРУКТОРА СВОИХ ПРИМЕРОВ
+        ========================================================================= */
+        function openCustomModal() {
+            document.getElementById('custom-error').classList.add('hidden');
+            document.getElementById('custom-modal').classList.remove('hidden');
         }
 
+        function closeCustomModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+
+        function parseEquationSide(str) {
+            const clean = str
+                .replace(/\s+/g, '')
+                .replace(/−/g, '-')
+                .replace(/,/g, '.')
+                .replace(/\+-/g, '-')
+                .replace(/-\+/g, '-')
+                .replace(/--/g, '+');
+            if (!clean) return null;
+            const tokens = clean.match(/[+-]?[^+-]+/g) || [];
+            const res = [];
+
+            for (let tok of tokens) {
+                let isX = tok.includes('x') || tok.includes('X') || tok.includes('х') || tok.includes('Х');
+                let numPart = tok.replace(/[xXхХ]/g, '');
+                let val = 1;
+                if (numPart === '' || numPart === '+') val = 1;
+                else if (numPart === '-') val = -1;
+                else {
+                    val = parseFloat(numPart);
+                    if (isNaN(val)) return null;
+                }
+                res.push(createTerm(val, isX));
+            }
+            return res;
+        }
+
+        function applyCustomEquation() {
+            const lStr = document.getElementById('custom-left-input').value;
+            const rStr = document.getElementById('custom-right-input').value;
+
+            const lParsed = parseEquationSide(lStr);
+            const rParsed = parseEquationSide(rStr);
+
+            if (!lParsed || !rParsed || lParsed.length === 0 || rParsed.length === 0) {
+                document.getElementById('custom-error').classList.remove('hidden');
+                return;
+            }
+
+            State.mode = 'custom';
+            ['lvl1', 'lvl2', 'dec', 'hard', 'custom'].forEach(m => {
+                const btn = document.getElementById('mode-' + m);
+                if (btn) btn.classList.toggle('active', m === 'custom');
+            });
+
+            State.left = lParsed;
+            State.right = rParsed;
+            State.history = [];
+            State.solved = false;
+            State.activeOp = null;
+            document.getElementById('undo-btn').disabled = true;
+            document.getElementById('win-banner').classList.add('hidden');
+            closeCustomModal();
+            renderAll();
+        }
+
+        window.addEventListener('blur', () => {
+            if (dragState) {
+                dragState.floatingEl.remove();
+                dragState = null;
+                State.livePreview = null;
+                renderAll();
+            }
+            if (coeffDragState) {
+                coeffDragState.floatingEl.remove();
+                coeffDragState = null;
+                State.livePreview = null;
+                renderAll();
+            }
+        });
+
         window.onload = () => {
-            Player.updateHeader();
-            setupZoneDragAndDrop();
-            generateNewEquation();
+            FX.init();
+            startNewEquation();
         };
     </script>
 </body>
